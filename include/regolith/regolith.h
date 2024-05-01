@@ -6,13 +6,18 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#include <functional>
 
 class rZone;
+class rEntity;
+class rComponent;
 
-
+#include "debug.h"
 #include "types.h"
 #include "messaging.h"
 #include "id_generator.h"
+#include "entity.h"
+#include "component.h"
 #include "player.h"
 #include "zone.h"
 #include "world.h"

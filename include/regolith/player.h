@@ -13,10 +13,13 @@ public:
     PlayerInfo();
     ~PlayerInfo();
 
+    void add_owned_entity(Ref<EntityInfo> associatedEntity);
+
+
+
     void load_player(Ref<PlayerInfo> playerInfo);
     void load_entity(Ref<EntityInfo> entityInfo);
     void load_entities_in_current_zone();
-    void add_owned_entity(Ref<EntityInfo> associatedEntity);
     void confirm_player_load(PlayerID_t playerId);
     void confirm_entity_load(EntityNetworkID_t entityNetworkId);
 

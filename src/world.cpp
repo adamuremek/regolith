@@ -18,7 +18,7 @@ void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
     newPlayer->setPlayerID(newPlayerID);
 
     //Send the player their ID
-    ControlMsg msg{};
+    rControlMsg msg{};
     msg.msgType = MessageType::ASSIGN_PLAYER_ID;
     msg.playerID = newPlayerID;
 
@@ -60,7 +60,7 @@ void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
                 // Send the message to the endpoint player in the zone
                 Bedrock::ClientID playerEndpoint = playerInZone.second->getClientID();
 
-                ControlMsg msg{};
+                rControlMsg msg{};
                 msg.msgType = MessageType::PLAYER_LEFT_ZONE;
                 msg.playerID = playerID;
                 msg.zoneID = zoneID;
@@ -81,7 +81,7 @@ void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
 }
 
 
-void rWorld::ssLoadZoneRequest(ControlMsg &inMsg, Bedrock::Message &outMsg) {
+void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the zone requested by the player
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
@@ -95,7 +95,7 @@ void rWorld::ssLoadZoneRequest(ControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 
-void rWorld::csAssignPlayerID(ControlMsg &inMsg, Bedrock::Message &outMsg) {
+void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Assign playerID to local player
     PlayerID playerID = inMsg.playerID;
     localPlayer->setPlayerID(playerID);

@@ -14,6 +14,7 @@ add_executable(regolith_test
         src/zone.cpp
         src/id_generator.cpp
         src/player.cpp
+        src/entity.cpp
 )
 target_include_directories(regolith_test PRIVATE ${PROJECT_SOURCE_DIR}/include)
 target_link_libraries(regolith_test PRIVATE Bedrock)

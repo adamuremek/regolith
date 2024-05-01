@@ -11,7 +11,8 @@ enum class MessageType : uint8_t {
     NONE,
     ASSIGN_PLAYER_ID,
     LOAD_ZONE_REQUEST,
-    PLAYER_LEFT_ZONE
+    PLAYER_LEFT_ZONE,
+    CREATE_ENTITY_REQUEST
 };
 
 

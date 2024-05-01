@@ -76,66 +76,91 @@ void rZone::removePlayer(rPlayer *player) {
     player->clearZoneInfo();
 }
 
-void rZone::loadEntity(const rEntityInfo &entityInfo) {
+void rZone::loadEntity(rEntityInfo &entityInfo) {
     //Make sure a world is being hosted or a world is connected to before trying to instantiate entities.
-    if(Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_NONE)){
-        //ERR_PRINT("Cannot create an entity if not hosting or connected to a world!");
+    if(Bedrock::isRole(Bedrock::Role::ACTOR_NONE)){
+        rDebug::err("Cannot create an entity if not hosting or connected to a world!");
         return;
     }
 
     //Make sure zone has been instantiated before calling
-    if(!m_instantiated){
-        //ERR_PRINT("Cannot create entity in zone, zone has not been instantiated!");
+    if(!instantiated){
+        rDebug::err("Cannot create entity in zone, zone has not been instantiated!");
         return;
     }
 
     //If an associated player is defined, make sure they are in the zone.
-    if(entityInfo->get_owner_id() > 0 && !player_in_zone(entityInfo->get_owner_id())){
-        //ERR_PRINT(vformat("Cannot associate entity with player \"ID: %d\". They are not in this zone!", entityInfo->get_owner_id()));
+    if(entityInfo.owner > 0 && !playerInZone(entityInfo.owner)){
+        rDebug::err("Cannot associate entity with player. They are not in this zone!");
         return;
     }
 
     //Make sure all other user entered data is valid
-    if(!entityInfo->verify_info()){
-        //ERR_PRINT("Cannot create entity, entity info is not valid!");
-        return;
-    }
+    //TODO: Figure out how to do this
+//    if(!entityInfo->verify_info()){
+//        //ERR_PRINT("Cannot create entity, entity info is not valid!");
+//        return;
+//    }
 
     //Set the entity's parent zone id
-    entityInfo->m_entityInfo.parentZone = m_zoneId;
+    entityInfo.parentZone = zoneID;
 
-    if(GDNet::singleton->is_client()){
-        //Serialize the entity info
-        entityInfo->serialize_info();
+    if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
+        // Send the entity creation request
+        rControlMsg req{};
+        req.msgType = MessageType::CREATE_ENTITY_REQUEST;
+        req.entityInfo = entityInfo;
 
-        //Make the message a creation request and prepare the data
-        entityInfo->m_entityInfo.dataBuffer.set(0, CREATE_ENTITY_REQUEST);
-        const unsigned char* mssgData = entityInfo->m_entityInfo.dataBuffer.ptr();
-        int mssgDataLen = entityInfo->m_entityInfo.dataBuffer.size();
-
-        //Create and send the message
-        SteamNetworkingMessage_t* mssg = allocate_message(mssgData, mssgDataLen, GDNet::singleton->world->m_worldConnection);
-        send_message_reliable(mssg);
-        print_line("Sent entity creation request! :)");
-    }else if(GDNet::singleton->is_server()){
+        Bedrock::sendToHost(req);
+    }else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         //Assign a network id for the entity
-        entityInfo->set_network_id(IDGenerator::generateNetworkIdentityID());
-        //Create the entity
-        create_entity(entityInfo);
+        entityInfo.instanceID = generateEntityInstanceID();
 
-        //Reserialize the entity info with the new data in it
-        entityInfo->serialize_info();
+        //Create the entity
+        createEntity(entityInfo);
 
         //Tell each player in the zone to also create this entity
-        for (const KeyValue<PlayerID_t, Ref<PlayerInfo>> &player : m_playersInZone) {
-            player.value->load_entity(entityInfo);
+        for (const auto& player : playersInZone) {
+            player.second->load_entity(entityInfo);
         }
     }
 }
 
-void rZone::destroyEntity(const rEntityInfo &entityInfo) {
+void rZone::createEntity(rEntityInfo &entityInfo) {
+    rEntity* entity = new rEntity;
+
+    //Store local references to relevant objects
+    EntityID entityID = entityInfo.entityID;
+    PlayerID ownerID = entityInfo.owner;
+
+    //Assign entity info to the entity
+    entity->setEntityInfo(entityInfo);
+
+    //Instantiate the entity via engine hook
+    entity->EngineHook_instantiateEntity();
+
+    //Add the entity to list of known entities in zone
+    entitiesInZone[entityInfo.instanceID] = entity;
+
+    //Store the parent zone instance in the entity
+    entity->setParentZone(this);
+
+    //Associate the entity with a player (if such a player was specified)
+    if(ownerID != 0){
+        playersInZone[ownerID]->add_owned_entity(entityInfo);
+    }
+
+    //Connect the entity to data transmission signals
+    if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
+        rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::ssFlushMessages);
+    }else{
+        rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::csFlushMessages);
+    }
+}
+
+void rZone::destroyEntity(rEntity* entity) {
     //Make sure the provided entity exists in this zone
-    EntityInstanceID instanceID = entityInfo.instanceID;
+    EntityInstanceID instanceID = entity->getInstanceID();
     auto it = entitiesInZone.find(instanceID);
     if(it == entitiesInZone.end()){
         //ERR_PRINT(vformat("Entity with net id %d does not exist in this zone!", entityInfo->get_network_id()));
@@ -146,26 +171,33 @@ void rZone::destroyEntity(const rEntityInfo &entityInfo) {
     }
 
     //Disconnect the entity from data transmission signals
-    NetworkEntity* instanceAsEntity = entityInfo->m_entityInfo.entityInstance;
-    if(GDNet::singleton->m_isServer){
-        Callable transmitCallback = Callable(instanceAsEntity, "server_side_transmit_data");
-        GDNet::singleton->world->disconnect("_server_side_transmit_entity_data", transmitCallback);
+    if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
+        rEntity::flushAllEntityMessages.unsubscribe(entity, &rEntity::ssFlushMessages);
     }else{
-        Callable transmitCallback = Callable(instanceAsEntity, "client_side_transmit_data");
-        GDNet::singleton->world->disconnect("_client_side_transmit_entity_data", transmitCallback);
+        rEntity::flushAllEntityMessages.unsubscribe(entity, &rEntity::csFlushMessages);
     }
 
     //Unlink the zone from the entity
-    instanceAsEntity->m_parentZone = nullptr;
+    entity->setParentZone(nullptr);
 
-    //Delete the node instance
-    instanceAsEntity->queue_free();
+    // Destroy the entity via engine hook
+    entity->EngineHook_uninstantiateEntity();
 
-    //Remove the entity instance pointer reference from the entity info
-    entityInfo->m_entityInfo.entityInstance = nullptr;
+    //TODO: delete this here?
+    delete entity;
+}
 
-    print_line(vformat("Ref Count for entity %d: %d", networkId, entityInfo->get_reference_count()));
+bool rZone::playerInZone(PlayerID playerID) {
+    auto playerIter = playersInZone.find(playerID);
+    return playerIter != playersInZone.end();
+}
 
-    print_line("Entity destoryed");
+rPlayer *rZone::getPlayer(const PlayerID &playerID) const {
+    auto it = playersInZone.find(playerID);
+    if(it != playersInZone.end()){
+        return it->second;
+    }
+
+    return nullptr;
 }
 
