@@ -16,6 +16,9 @@ public:
 
     void addComponent();
 
+    void ssFlushMessages();
+    void csFlushMessages();
+
     inline EntityID getEntityID() const { return entityID; }
     inline EntityInstanceID getInstanceID() const { return instanceID; }
     inline PlayerID getOwner() const { return owner; }
@@ -27,9 +30,6 @@ public:
         instanceID = entityInfo.instanceID;
         owner = entityInfo.owner;
     }
-
-    void ssFlushMessages();
-    void csFlushMessages();
 
     bool has_ownership();
     void SERVER_SIDE_tick();
@@ -64,9 +64,6 @@ public:
         static rEntityRegistry instance;
         return instance;
     }
-
-
-
 };
 
 

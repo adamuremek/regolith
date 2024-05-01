@@ -89,7 +89,6 @@ void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Try to instantiate the zone (if it hasn't already been)
     zone->instantiateZone();
 
-
     // Tell the player to load the zone locally on their end
     Bedrock::serializeType(inMsg, outMsg);
 }

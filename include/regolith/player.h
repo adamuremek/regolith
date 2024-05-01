@@ -7,15 +7,12 @@ private:
     Bedrock::ClientID clientID{0};
     rZone* p_currentZone{nullptr};
 
+
 public:
-    std::unordered_map<EntityInstanceID, rEntityInfo> ownedEntities;
+    std::unordered_map<EntityInstanceID, rEntity*> ownedEntities;
 
-    PlayerInfo();
-    ~PlayerInfo();
-
-    void add_owned_entity(Ref<EntityInfo> associatedEntity);
-
-
+    void addOwnedEntity(rEntity* ownedEntity);
+    void removeOwnedEntity(rEntity* ownedEntity);
 
     void load_player(Ref<PlayerInfo> playerInfo);
     void load_entity(Ref<EntityInfo> entityInfo);

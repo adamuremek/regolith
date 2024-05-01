@@ -10,7 +10,6 @@ protected:
     //Default transmission rate is 20hz.
     int m_maxTickCount = 50;
 public:
-    static const int METADATA_SIZE;
     NetworkEntity *m_parentNetworkEntity = nullptr;
 
     virtual void tick();

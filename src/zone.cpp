@@ -60,10 +60,10 @@ void rZone::removePlayer(rPlayer *player) {
     for(const auto& pair : player->ownedEntities){
         auto entityIter = entitiesInZone.find(pair.first);
         if(entityIter != entitiesInZone.end()){
+            // destroyEntity also removes the entity from the player's ownership list.
             destroyEntity(entityIter->second);
         }
     }
-    player->ownedEntities.clear();
 
     //Remove player from zone's player list (this has to be done after the above bc
     //the "destroy_entity" method uses the player list to erase the owned entity from the player)
@@ -127,30 +127,27 @@ void rZone::loadEntity(rEntityInfo &entityInfo) {
 }
 
 void rZone::createEntity(rEntityInfo &entityInfo) {
-    rEntity* entity = new rEntity;
+    auto* entity = new rEntity;
 
-    //Store local references to relevant objects
-    EntityID entityID = entityInfo.entityID;
-    PlayerID ownerID = entityInfo.owner;
-
-    //Assign entity info to the entity
+    // Assign entity info to the entity
     entity->setEntityInfo(entityInfo);
 
-    //Instantiate the entity via engine hook
+    // Instantiate the entity via engine hook
     entity->EngineHook_instantiateEntity();
 
-    //Add the entity to list of known entities in zone
+    // Add the entity to list of known entities in zone
     entitiesInZone[entityInfo.instanceID] = entity;
 
-    //Store the parent zone instance in the entity
+    // Store the parent zone instance in the entity
     entity->setParentZone(this);
 
-    //Associate the entity with a player (if such a player was specified)
-    if(ownerID != 0){
-        playersInZone[ownerID]->add_owned_entity(entityInfo);
+    // Add entity to the player's ownership list (if such a player was specified)
+    if(PlayerID ownerID = entity->getOwner(); ownerID != 0){
+        playersInZone[ownerID]->addOwnedEntity(entity);
     }
 
-    //Connect the entity to data transmission signals
+    // Connect the entity to data transmission events.
+    // These events will be called ever network tick to send information around.
     if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::ssFlushMessages);
     }else{
@@ -183,7 +180,11 @@ void rZone::destroyEntity(rEntity* entity) {
     // Destroy the entity via engine hook
     entity->EngineHook_uninstantiateEntity();
 
-    //TODO: delete this here?
+    // Remove the entity from player ownership list (if such player exists)
+    if(PlayerID ownerID = entity->getOwner(); ownerID != 0){
+        playersInZone[ownerID]->removeOwnedEntity(entity);
+    }
+
     delete entity;
 }
 
