@@ -11,6 +11,10 @@ public:
     std::unordered_map<PlayerID, rPlayer*> playersInZone;
     std::unordered_map<EntityInstanceID, rEntity*> entitiesInZone;
 
+    // Zone events
+    Bedrock::Event<> onLoadedZone;
+    Bedrock::Event<PlayerID> onPlayerLoadedZone;
+
     virtual void EngineHook_instantiateZoneStart(){}
     virtual void EngineHook_instantiateZoneFinish(){}
     virtual void EngineHook_uninstantiateZone(){}
@@ -24,15 +28,16 @@ public:
     void removePlayer(rPlayer* player);
 
     void loadEntity(rEntityInfo& entityInfo);
-    void createEntity(rEntityInfo& entityInfo);
+    rEntity* createEntity(rEntityInfo& entityInfo);
     void destroyEntity(rEntity* entity);
 
 
-    bool playerInZone(PlayerID playerID);
-    inline bool isInstantiated() const { return instantiated; };
+    bool hasPlayer(PlayerID playerID);
 
+    bool hasPlayer(rPlayer* player);
+    inline bool isInstantiated() const { return instantiated; };
     inline ZoneID getZoneID() const { return zoneID; }
-    inline rPlayer* getPlayer(const PlayerID& playerID) const;
+    rPlayer* getPlayer(const PlayerID& playerID) const;
 
     inline void setZoneID(const ZoneID& newZoneID) { zoneID = newZoneID; }
 };

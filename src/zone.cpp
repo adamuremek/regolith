@@ -50,19 +50,16 @@ void rZone::removePlayer(rPlayer *player) {
     PlayerID playerID = player->getPlayerID();
 
     // Return from the function if the specified player isn't in the zone
-    auto playerIter = playersInZone.find(playerID);
-    if( playerIter == playersInZone.end()){
+    if(!hasPlayer(playerID)){
         return;
     }
 
     //Iterate through the player's owned entities, and remove them
     //from the player's list and the zone if they exist in this zone
     for(const auto& pair : player->ownedEntities){
-        auto entityIter = entitiesInZone.find(pair.first);
-        if(entityIter != entitiesInZone.end()){
-            destroyEntity(entityIter->second);
-        }
+        destroyEntity(pair.second);
     }
+
     player->ownedEntities.clear();
 
     //Remove player from zone's player list (this has to be done after the above bc
@@ -72,7 +69,7 @@ void rZone::removePlayer(rPlayer *player) {
     // Invoke engine specific code for when a player leaves the zone
     EngineHook_playerLeftZone(player);
 
-    //Reset the player's information
+    //Reset the player's zone information
     player->clearZoneInfo();
 }
 
@@ -90,7 +87,7 @@ void rZone::loadEntity(rEntityInfo &entityInfo) {
     }
 
     //If an associated player is defined, make sure they are in the zone.
-    if(entityInfo.owner > 0 && !playerInZone(entityInfo.owner)){
+    if(entityInfo.owner > 0 && !hasPlayer(entityInfo.owner)){
         rDebug::err("Cannot associate entity with player. They are not in this zone!");
         return;
     }
@@ -116,41 +113,38 @@ void rZone::loadEntity(rEntityInfo &entityInfo) {
         //Assign a network id for the entity
         entityInfo.instanceID = generateEntityInstanceID();
 
-        //Create the entity
-        createEntity(entityInfo);
+        //Create the entity on the server's side
+        rEntity* entity = createEntity(entityInfo);
 
         //Tell each player in the zone to also create this entity
         for (const auto& player : playersInZone) {
-            player.second->load_entity(entityInfo);
+            player.second->loadEntity(entity);
         }
     }
 }
 
-void rZone::createEntity(rEntityInfo &entityInfo) {
-    rEntity* entity = new rEntity;
+rEntity* rZone::createEntity(rEntityInfo &entityInfo) {
+    auto* entity = new rEntity;
 
-    //Store local references to relevant objects
-    EntityID entityID = entityInfo.entityID;
-    PlayerID ownerID = entityInfo.owner;
-
-    //Assign entity info to the entity
+    // Assign entity info to the entity
     entity->setEntityInfo(entityInfo);
 
-    //Instantiate the entity via engine hook
+    // Instantiate the entity via engine hook
     entity->EngineHook_instantiateEntity();
 
-    //Add the entity to list of known entities in zone
+    // Add the entity to list of known entities in zone
     entitiesInZone[entityInfo.instanceID] = entity;
 
-    //Store the parent zone instance in the entity
+    // Store the parent zone instance in the entity
     entity->setParentZone(this);
 
-    //Associate the entity with a player (if such a player was specified)
+    // Associate the entity with a player (if such a player was specified)
+    PlayerID ownerID = entityInfo.owner;
     if(ownerID != 0){
-        playersInZone[ownerID]->add_owned_entity(entityInfo);
+        playersInZone[ownerID]->addOwnedEntity(entity);
     }
 
-    //Connect the entity to data transmission signals
+    // Connect the entity to data transmission signals
     if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::ssFlushMessages);
     }else{
@@ -187,8 +181,13 @@ void rZone::destroyEntity(rEntity* entity) {
     delete entity;
 }
 
-bool rZone::playerInZone(PlayerID playerID) {
+bool rZone::hasPlayer(PlayerID playerID) {
     auto playerIter = playersInZone.find(playerID);
+    return playerIter != playersInZone.end();
+}
+
+bool rZone::hasPlayer(rPlayer *player) {
+    auto playerIter = playersInZone.find(player->getPlayerID());
     return playerIter != playersInZone.end();
 }
 

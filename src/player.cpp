@@ -39,13 +39,16 @@ void rPlayer::confirmEntityLoaded(EntityInstanceID entityInstanceID) {
         rControlMsg msg;
         msg.msgType = MessageType::LOAD_ZONE_COMPLETE;
         msg.playerID = playerID;
+        msg.zoneID = p_currentZone->getZoneID();
 
         for (const auto& pair : p_currentZone->playersInZone) {
             Bedrock::sendToClient(msg, pair.second->getClientID());
         }
+
+        // Fire the zone's player loaded event server side
+        p_currentZone->onPlayerLoadedZone.invoke(playerID);
     }
 }
-
 
 void rPlayer::loadPlayer(rPlayer *player) {
     // Create a message to tell this end client/player to allocate information for the incoming player
@@ -60,9 +63,9 @@ void rPlayer::loadPlayer(rPlayer *player) {
     Bedrock::sendToClient(msg, clientID);
 }
 
-void rPlayer::confirmPlayerLoaded(PlayerID playerID) {
+void rPlayer::confirmPlayerLoaded(PlayerID loadedPlayerID) {
     // Remove the player from the ACK buffer
-    playersWaitingForLoadAck.erase(playerID);
+    playersWaitingForLoadAck.erase(loadedPlayerID);
 
     // Once the ACK buffer is empty and the player has made player info allocations for all other
     // players in the zone, start loading in all the entities in the zone.

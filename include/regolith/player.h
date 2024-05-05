@@ -13,13 +13,12 @@ private:
     std::unordered_set<PlayerID> playersWaitingForLoadAck;
 
 public:
-    std::unordered_map<EntityInstanceID, rEntityInfo> ownedEntities;
+    std::unordered_map<EntityInstanceID, rEntity*> ownedEntities;
 
+    inline void addOwnedEntity(rEntity* entity) { ownedEntities[entity->getInstanceID()] = entity; }
     void loadEntitiesInCurrentZone();
     void loadEntity(rEntity* entity);
     void confirmEntityLoaded(EntityInstanceID entityInstanceID);
-
-    void add_owned_entity(Ref<EntityInfo> associatedEntity);
 
     void loadPlayer(rPlayer* player);
     void confirmPlayerLoaded(PlayerID playerID);
@@ -29,9 +28,9 @@ public:
 
     void clearZoneInfo();
 
-    inline PlayerID getPlayerID() const { return playerID; }
-    inline Bedrock::ClientID getClientID() const { return clientID; }
-    inline rZone* getCurrentZone() const { return p_currentZone; }
+    [[nodiscard]] inline PlayerID getPlayerID() const { return playerID; }
+    [[nodiscard]] inline Bedrock::ClientID getClientID() const { return clientID; }
+    [[nodiscard]] inline rZone* getCurrentZone() const { return p_currentZone; }
 
 
     inline void setPlayerID(const PlayerID& newPlayerID) { playerID = newPlayerID; }
