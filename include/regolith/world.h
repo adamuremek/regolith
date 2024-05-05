@@ -6,6 +6,9 @@ private:
     std::unordered_map<Bedrock::ClientID, rPlayer*> playerByClientID;
     std::unordered_map<PlayerID, rPlayer*> playerByPlayerID;
 
+    // World Events
+    Bedrock::Event<> onJoinedWorld;
+    Bedrock::Event<PlayerID> onPlayerJoinWorld;
 
     //server callbacks?
     void playerConnected(const Bedrock::ClientID& clientID);
@@ -13,10 +16,10 @@ private:
 
     void removePlayer(const Bedrock::ClientID& clientID);
 
-    void ssLoadZoneRequest(ControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssLoadZoneAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
 
 
-    void SERVER_SIDE_load_zone_acknowledge(const unsigned char *mssgData, HSteamNetConnection sourceConn);
     void SERVER_SIDE_create_zone_player_info_acknowledge(const unsigned char *mssgData, HSteamNetConnection sourceConn);
     void SERVER_SIDE_load_entity_request(const unsigned char *mssgData);
     void SERVER_SIDE_load_entity_acknowledge(const unsigned char *mssgData, HSteamNetConnection sourceConn);
@@ -31,13 +34,13 @@ private:
     //Client Side
     rPlayer* localPlayer{nullptr};
 
-    void csAssignPlayerID(ControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csAssignPlayerID(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csLoadEntityRequest(const unsigned char *mssgData);
 
 
     void CLIENT_SIDE_zone_load_complete(const unsigned char *mssgData);
-    void CLIENT_SIDE_load_zone_request(const unsigned char *mssgData);
     void CLIENT_SIDE_process_create_zone_player_info_request(const unsigned char *mssgData);
-    void CLIENT_SIDE_load_entity_request(const unsigned char *mssgData);
     void CLIENT_SIDE_handle_entity_update(const unsigned char *mssgData, const int mssgLen);
     void CLIENT_SIDE_player_left_zone(const unsigned char *mssgData);
 
@@ -59,8 +62,6 @@ public:
 
     //Client side
     HSteamNetConnection m_worldConnection;
-
-    bool CLIENT_SIDE_instantiate_zone(ZoneID_t zoneId);
 
     PlayerID_t get_player_id();
 
