@@ -7,6 +7,7 @@ private:
     Bedrock::ClientID clientID{0};
     rZone* p_currentZone{nullptr};
     bool flagLoadedInOtherPlayers{false};
+    bool flagLoadedAllEntitiesInZone{false};
 
     std::unordered_set<EntityInstanceID> entitiesWaitingForLoadAck;
     std::unordered_set<PlayerID> playersWaitingForLoadAck;
@@ -14,19 +15,16 @@ private:
 public:
     std::unordered_map<EntityInstanceID, rEntityInfo> ownedEntities;
 
-    PlayerInfo();
-    ~PlayerInfo();
-
     void loadEntitiesInCurrentZone();
     void loadEntity(rEntity* entity);
+    void confirmEntityLoaded(EntityInstanceID entityInstanceID);
 
     void add_owned_entity(Ref<EntityInfo> associatedEntity);
 
     void loadPlayer(rPlayer* player);
+    void confirmPlayerLoaded(PlayerID playerID);
 
 
-    void confirm_player_load(PlayerID_t playerId);
-    void confirm_entity_load(EntityNetworkID_t entityNetworkId);
 
 
     void clearZoneInfo();

@@ -84,6 +84,15 @@ void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
 }
 
 /*====================== SERVER SIDE CALLBACKS ======================*/
+void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    // Get the player who sent the acknowledgement
+    PlayerID playerID = inMsg.playerID;
+    rPlayer* player = playerByPlayerID[playerID];
+
+    //Confirm that the player info has been created on the client's end
+    player->confirmPlayerLoaded(inMsg.allocatedPlayer);
+}
+
 void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the zone requested by the player
     ZoneID zoneID = inMsg.zoneID;
@@ -115,12 +124,12 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
     // If the loading player is the only one in the zone, just advance to loading the entities.
     // Otherwise, load in the players currently in the zone first then load the entities.
     if(zone->playersInZone.size() == 1){
-        //This is important: mark that the player has loaded in all other players (since there are none in the zone).
-        //Otherwise, the server will make this player load in all entities in the zone again
-        //when another player loads into the zone.
+        // IMPORTANT: mark that the player has loaded in all other players (since there are none in the zone).
+        // Otherwise, the server will make this player load in all entities in the zone again
+        // when another player loads into the zone.
         player->setFlagLoadedInOtherPlayers(true);
 
-        //Now make the player load all entities that are currently in the zone
+        // Now make the player load all entities that are currently in the zone
         player->loadEntitiesInCurrentZone();
     }else{
         //Tell all current players in the zone that a new player in loading in.
@@ -143,6 +152,14 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
     }
 }
 
+void rWorld::ssLoadEntityAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    // Get the player who sent the acknowledgement
+    rPlayer* player = playerByPlayerID[inMsg.playerID];
+
+    // Confirm that the end client has loaded this entity (remove from ACK buffer)
+    player->confirmEntityLoaded(inMsg.entityInfo.instanceID);
+}
+
 /*====================== CLIENT SIDE CALLBACKS ======================*/
 void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Assign playerID to local player
@@ -157,6 +174,24 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
     // Fire the player join world event (client side)
     onPlayerJoinWorld.invoke(playerID);
+}
+
+void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    // Get the player ID for the player that needs a player object instance to be created
+    PlayerID playerID = inMsg.playerID;
+
+    // Create a new player object instance
+    auto player = new rPlayer;
+    player->setPlayerID(playerID);
+
+    //Add the new player info to the zone's list players
+    localPlayer->getCurrentZone()->addPlayer(player);
+
+    //Send a "load" acknowledgement back to the server
+    inMsg.msgType = MessageType::ALLOCATE_INCOMING_PLAYER_ACK;
+    inMsg.playerID = localPlayer->getPlayerID();
+    inMsg.allocatedPlayer = player->getPlayerID();
+    Bedrock::serializeType(inMsg, outMsg);
 }
 
 void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -181,7 +216,25 @@ void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     }
 }
 
+void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("Create entity rquest recieved!");
+    // Get the zone where the entity needs to be loaded in
+    ZoneID parentZoneID = inMsg.entityInfo.parentZone;
+    rZone* parentZone = rZoneRegistry::getInstance().getZoneByID(parentZoneID);
 
+    // Make sure the relevant zone exists
+    if(parentZone){
+        //Create the entity
+        parentZone->createEntity(inMsg.entityInfo);
+
+        //Send entity creation acknowledgement to server
+        inMsg.msgType = MessageType::CREATE_ENTITY_ACKNOWLEDGE;
+        inMsg.playerID = localPlayer->getPlayerID();
+        Bedrock::serializeType(inMsg, outMsg);
+    }else{
+        rDebug::err("Parent zone ID does not exist when creating entity!");
+    }
+}
 
 
 

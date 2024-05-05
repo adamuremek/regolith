@@ -26,6 +26,27 @@ void rPlayer::loadEntity(rEntity *entity) {
     Bedrock::sendToClient(msg, clientID);
 }
 
+void rPlayer::confirmEntityLoaded(EntityInstanceID entityInstanceID) {
+    // Remove the entity from the ACK buffer
+    entitiesWaitingForLoadAck.erase(entityInstanceID);
+
+    // Check if all the entities in the zone have been loaded for this player
+    if(entitiesWaitingForLoadAck.empty() && !flagLoadedAllEntitiesInZone){
+        // Mark that this player has loaded all entities in the zone
+        flagLoadedAllEntitiesInZone = true;
+
+        // Inform all players in the zone that this player has fully loaded into the zone
+        rControlMsg msg;
+        msg.msgType = MessageType::LOAD_ZONE_COMPLETE;
+        msg.playerID = playerID;
+
+        for (const auto& pair : p_currentZone->playersInZone) {
+            Bedrock::sendToClient(msg, pair.second->getClientID());
+        }
+    }
+}
+
+
 void rPlayer::loadPlayer(rPlayer *player) {
     // Create a message to tell this end client/player to allocate information for the incoming player
     rControlMsg msg;
@@ -38,3 +59,20 @@ void rPlayer::loadPlayer(rPlayer *player) {
     // Send message to the end client
     Bedrock::sendToClient(msg, clientID);
 }
+
+void rPlayer::confirmPlayerLoaded(PlayerID playerID) {
+    // Remove the player from the ACK buffer
+    playersWaitingForLoadAck.erase(playerID);
+
+    // Once the ACK buffer is empty and the player has made player info allocations for all other
+    // players in the zone, start loading in all the entities in the zone.
+    if(playersWaitingForLoadAck.empty() && !flagLoadedInOtherPlayers){
+        // Mark that the player has loaded all other players in the zone locally
+        flagLoadedInOtherPlayers = true;
+
+        // Load all entities in the zone
+        loadEntitiesInCurrentZone();
+    }
+}
+
+
