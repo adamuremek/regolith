@@ -16,6 +16,7 @@ public:
     std::unordered_map<EntityInstanceID, rEntity*> ownedEntities;
 
     inline void addOwnedEntity(rEntity* entity) { ownedEntities[entity->getInstanceID()] = entity; }
+    inline void removeOwnedEntity(rEntity* entity) { ownedEntities.erase(entity->getInstanceID()); }
     void loadEntitiesInCurrentZone();
     void loadEntity(rEntity* entity);
     void confirmEntityLoaded(EntityInstanceID entityInstanceID);

@@ -33,7 +33,6 @@ public:
 
 
     bool hasPlayer(PlayerID playerID);
-
     bool hasPlayer(rPlayer* player);
     inline bool isInstantiated() const { return instantiated; };
     inline ZoneID getZoneID() const { return zoneID; }

@@ -31,26 +31,25 @@ private:
     void csLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadZoneComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadEntityRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csHandleControlMsg(rControlMsg& inMsg, Bedrock::Message& outMsg);
 
 public:
     // World Events
     Bedrock::Event<> onJoinedWorld;
     Bedrock::Event<PlayerID> onPlayerJoinWorld;
 
-    void cleanup();
-
 
     void startWorld(uint16_t port);
     void stopWorld();
 
     void joinWorld(const char* world, int port);
-    void leaveWorld();
-
-    bool load_zone_by_name(String zoneName);
-    bool load_zone_by_id(ZoneID_t zoneId);
-    void unload_zone();
-
-    //Both
-    bool player_exists(PlayerID_t playerId);
+//    void leaveWorld();
+//
+//    bool load_zone_by_name(String zoneName);
+//    bool load_zone_by_id(ZoneID_t zoneId);
+//    void unload_zone();
+//
+//    //Both
+//    bool player_exists(PlayerID_t playerId);
 };
 #endif //REGOLITH_WORLD_H

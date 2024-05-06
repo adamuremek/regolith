@@ -22,7 +22,7 @@ bool rZone::instantiateZone() {
 }
 
 void rZone::uninstantiateZone() {
-    // Destory all entities in the zone
+    // Destroy all entities in the zone
     for(const auto& pair : entitiesInZone){
         destroyEntity(pair.second);
     }
@@ -151,6 +151,8 @@ rEntity* rZone::createEntity(rEntityInfo &entityInfo) {
     }else{
         rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::csFlushMessages);
     }
+
+    return entity;
 }
 
 void rZone::destroyEntity(rEntity* entity) {
@@ -163,6 +165,12 @@ void rZone::destroyEntity(rEntity* entity) {
     }else{
         //Remove the entity reference stored in the zone
         entitiesInZone.erase(instanceID);
+    }
+
+    // If the entity has an owner, remove it from that owner list
+    PlayerID ownerID = entity->getOwner();
+    if(ownerID != 0){
+        playersInZone[ownerID]->removeOwnedEntity(entity);
     }
 
     //Disconnect the entity from data transmission signals
@@ -178,7 +186,6 @@ void rZone::destroyEntity(rEntity* entity) {
     // Destroy the entity via engine hook
     entity->EngineHook_uninstantiateEntity();
 
-    //TODO: delete this here?
     delete entity;
 }
 

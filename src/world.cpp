@@ -320,27 +320,73 @@ void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     }
 }
 
+void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    switch(inMsg.msgType){
+        case MessageType::ASSIGN_PLAYER_ID:
+            csAssignPlayerID(inMsg, outMsg);
+            break;
+        case MessageType::LOAD_ZONE_REQUEST:
+            csLoadZoneRequest(inMsg, outMsg);
+            break;
+        case MessageType::LOAD_ZONE_FAILED_INVALID_ID:
+            rDebug::err("Sent wrong zone id (client side)");
+            break;
+        case MessageType::LOAD_ZONE_COMPLETE:
+            csLoadZoneComplete(inMsg, outMsg);
+            break;
+        case MessageType::PLAYER_UNLOADED_ZONE:
+            csPlayerUnloadedZone(inMsg, outMsg);
+            break;
+        case MessageType::CREATE_ENTITY_REQUEST:
+            csLoadEntityRequest(inMsg, outMsg);
+            break;
+        case MessageType::ALLOCATE_INCOMING_PLAYER:
+            csAllocatePlayerInstance(inMsg, outMsg);
+            break;
+        default:
+            break;
+    }
+}
 
 
 void rWorld::startWorld(uint16_t port) {
     if (!Bedrock::isInitialized) {
         return;
     }
-    // TODO: Fix this shit right here
-    Bedrock::registerMsgCallback(ssHandleControlMsg);
 
+    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg){
+        this->ssHandleControlMsg(inMsg, outMsg);
+    };
+
+    // Register server side callbacks
+    Bedrock::MessageCallbackRegistry::singleton().registerCallback<rControlMsg>(callbacks);
+    Bedrock::onClientConnect.subscribe(this, &rWorld::playerConnected);
+    Bedrock::onClientDisconnect.subscribe(this, &rWorld::playerDisconnected);
+
+    Bedrock::init();
     Bedrock::startDedicatedHost(port);
 }
 
-void rWorld::stop_world() {
-    //TODO: need a way to shutdown the host without shutting down bedrock
+void rWorld::stopWorld() {
+    Bedrock::shutdown();
+    Bedrock::clearMsgCallbacks();
+    Bedrock::clearEventCallbacks();
 }
 
 void rWorld::joinWorld(const char *world, int port) {
-    //Set client callbacks
-    //TODO
+    if (!Bedrock::isInitialized) {
+        return;
+    }
+
+    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg){
+        this->csHandleControlMsg(inMsg, outMsg);
+    };
+
+    // Register client side callbacks
+    Bedrock::MessageCallbackRegistry::singleton().registerCallback<rControlMsg>(callbacks);
 
     //Connect to world
+    Bedrock::init();
     if (!Bedrock::startClient(port, world)) {
         return;
     }
@@ -349,40 +395,40 @@ void rWorld::joinWorld(const char *world, int port) {
     localPlayer = new rPlayer;
 }
 
-void rWorld::leaveWorld() {
-    if (Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_NONE) ||
-        Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_SERVER)) {
-        return;
-    }
-
-    //Check for a zone to unload, and unload it if there is one
-    rZone *loadedZone = localPlayer->getCurrentZone();
-    if(loadedZone){
-        //Remove the player from the zone locally
-        loadedZone->remove_player(m_localPlayer);
-
-        //Destroy the zone locally (for now)
-        loadedZone->uninstantiate_zone();
-    }
-
-    m_clientRunLoop = false;
-
-    //Stop the listen loop
-    if (m_clientListenThread.joinable()){
-        m_clientListenThread.join();
-    }
-
-    //Stop the tick loop
-    if(m_clientTickThread.joinable()){
-        m_clientTickThread.join();
-    }
-
-    //Stop world connection
-    SteamNetworkingSockets()->CloseConnection(m_worldConnection, 0, nullptr, false);
-    m_worldConnection = k_HSteamNetConnection_Invalid;
-
-    GDNet::singleton->m_isClient = false;
-
-    //Inform signal connections that client has left the world
-    emit_signal("left_world");
-}
+//void rWorld::leaveWorld() {
+//    if (Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_NONE) ||
+//        Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_SERVER)) {
+//        return;
+//    }
+//
+//    //Check for a zone to unload, and unload it if there is one
+//    rZone *loadedZone = localPlayer->getCurrentZone();
+//    if(loadedZone){
+//        //Remove the player from the zone locally
+//        loadedZone->remove_player(m_localPlayer);
+//
+//        //Destroy the zone locally (for now)
+//        loadedZone->uninstantiate_zone();
+//    }
+//
+//    m_clientRunLoop = false;
+//
+//    //Stop the listen loop
+//    if (m_clientListenThread.joinable()){
+//        m_clientListenThread.join();
+//    }
+//
+//    //Stop the tick loop
+//    if(m_clientTickThread.joinable()){
+//        m_clientTickThread.join();
+//    }
+//
+//    //Stop world connection
+//    SteamNetworkingSockets()->CloseConnection(m_worldConnection, 0, nullptr, false);
+//    m_worldConnection = k_HSteamNetConnection_Invalid;
+//
+//    GDNet::singleton->m_isClient = false;
+//
+//    //Inform signal connections that client has left the world
+//    emit_signal("left_world");
+//}
