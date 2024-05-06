@@ -144,7 +144,8 @@ rEntity* rZone::createEntity(rEntityInfo &entityInfo) {
         playersInZone[ownerID]->addOwnedEntity(entity);
     }
 
-    // Connect the entity to data transmission signals
+    // Connect the entity to data transmission events.
+    // These events will be called ever network tick to send information around.
     if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::ssFlushMessages);
     }else{

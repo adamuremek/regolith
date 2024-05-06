@@ -11,14 +11,13 @@ public:
     virtual void EngineHook_instantiateEntity(){}
     virtual void EngineHook_uninstantiateEntity(){}
 
-    void addComponent();
+//    void addComponent();
 
     inline EntityID getEntityID() const { return entityInfo.entityID; }
     inline EntityInstanceID getInstanceID() const { return entityInfo.instanceID; }
     inline PlayerID getOwner() const { return entityInfo.owner; }
     inline ZoneID getParentZoneID() const { return entityInfo.parentZone; }
     inline rZone* getParentZone() const { return p_parentZone; }
-    inline rEntityInfo getEntityInfo() const { return entityInfo; }
 
     inline void setParentZone(rZone* zone) { p_parentZone = zone; }
     inline void setEntityInfo(const rEntityInfo& info){ entityInfo = info; }
@@ -46,9 +45,6 @@ public:
         static rEntityRegistry instance;
         return instance;
     }
-
-
-
 };
 
 
