@@ -1,6 +1,17 @@
 #ifndef REGOLITH_H
 #define REGOLITH_H
 
+#ifdef _WIN32
+    #ifdef REGOLITH_DLL
+        #define REGOLITH_API __declspec(dllexport)
+    #else
+        #define REGOLITH_API __declspec(dllimport)
+    #endif
+#else
+    #define REGOLITH_API
+#endif
+
+
 #include <bedrock/bedrock.h>
 #include <cstdint>
 #include <unordered_map>

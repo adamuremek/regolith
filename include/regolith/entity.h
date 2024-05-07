@@ -1,7 +1,7 @@
 #ifndef REGOLITH_ENTITY_H
 #define REGOLITH_ENTITY_H
 
-class rEntity{
+class REGOLITH_API rEntity{
 private:
     rEntityInfo entityInfo;
     rZone* p_parentZone;
@@ -18,6 +18,7 @@ public:
     inline PlayerID getOwner() const { return entityInfo.owner; }
     inline ZoneID getParentZoneID() const { return entityInfo.parentZone; }
     inline rZone* getParentZone() const { return p_parentZone; }
+    inline rEntityInfo getEntityInfo() const { return entityInfo;}
 
     inline void setParentZone(rZone* zone) { p_parentZone = zone; }
     inline void setEntityInfo(const rEntityInfo& info){ entityInfo = info; }

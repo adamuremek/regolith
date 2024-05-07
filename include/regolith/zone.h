@@ -1,7 +1,7 @@
 #ifndef REGOLITH_ZONE_H
 #define REGOLITH_ZONE_H
 
-class rZone {
+class REGOLITH_API rZone {
 
 private:
     ZoneID zoneID{0};

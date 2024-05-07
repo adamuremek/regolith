@@ -1,7 +1,7 @@
 #ifndef REGOLITH_WORLD_H
 #define REGOLITH_WORLD_H
 
-class rWorld{
+class REGOLITH_API rWorld{
 private:
     // Server side variables
     std::unordered_map<Bedrock::ClientID, rPlayer*> playerByClientID;

@@ -1,7 +1,7 @@
 #ifndef REGOLITH_PLAYER_INFO_H
 #define REGOLITH_PLAYER_INFO_H
 
-class rPlayer{
+class REGOLITH_API rPlayer{
 private:
     PlayerID playerID{0};
     Bedrock::ClientID clientID{0};

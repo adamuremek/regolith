@@ -1,7 +1,7 @@
 #ifndef REGOLITH_DEBUG_H
 #define REGOLITH_DEBUG_H
 
-class rDebug{
+class REGOLITH_API rDebug{
 public:
     static void doNothing(const char*){}
     static inline std::function<void(const char*)> log = doNothing;
