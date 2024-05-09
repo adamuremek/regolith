@@ -35,8 +35,8 @@ private:
 
 public:
     // World Events
-    Bedrock::Event<> onJoinedWorld;
-    Bedrock::Event<PlayerID> onPlayerJoinWorld;
+    Bedrock::Event<void> onJoinedWorld;
+    Bedrock::Event<void, PlayerID> onPlayerJoinWorld;
 
 
     void startWorld(uint16_t port);

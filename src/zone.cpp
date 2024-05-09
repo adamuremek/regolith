@@ -147,9 +147,9 @@ rEntity* rZone::createEntity(rEntityInfo &entityInfo) {
     // Connect the entity to data transmission events.
     // These events will be called ever network tick to send information around.
     if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
-        rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::ssFlushMessages);
-    }else{
-        rEntity::flushAllEntityMessages.subscribe(entity, &rEntity::csFlushMessages);
+        rEntity::flushAllEntityMessages.subscribe(entity->ssFlushCallback);
+    }else if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
+        rEntity::flushAllEntityMessages.subscribe(entity->csFlushCallback);
     }
 
     return entity;
@@ -175,9 +175,9 @@ void rZone::destroyEntity(rEntity* entity) {
 
     //Disconnect the entity from data transmission signals
     if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
-        rEntity::flushAllEntityMessages.unsubscribe(entity, &rEntity::ssFlushMessages);
-    }else{
-        rEntity::flushAllEntityMessages.unsubscribe(entity, &rEntity::csFlushMessages);
+        rEntity::flushAllEntityMessages.unsubscribe(entity->ssFlushCallback);
+    }else if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
+        rEntity::flushAllEntityMessages.unsubscribe(entity->csFlushCallback);
     }
 
     //Unlink the zone from the entity

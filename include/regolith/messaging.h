@@ -16,6 +16,8 @@ BedrockMsgDatatype(rEntityInfo){
     }
 
     bool verifyDataIntegrity(){
+    //TODO implement this shit
+        return true;
     }
 };
 

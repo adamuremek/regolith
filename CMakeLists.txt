@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(regolith VERSION 1.0)
+project(Regolith VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -8,12 +8,14 @@ set(BUILD_SHARED_LIBS ON)
 # Import Bedrock
 add_subdirectory(extern/bedrock)
 
+if(WIN32 AND BUILD_SHARED_LIBS AND (MSVC OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
 add_definitions(
         ${BEDROCK_DEFINITIONS}
         -DREGOLITH_DLL=1
 )
+endif ()
 
-add_library(regolith
+add_library(Regolith
         src/world.cpp
         src/zone.cpp
         src/id_generator.cpp
@@ -21,15 +23,15 @@ add_library(regolith
         src/entity.cpp
         ${BEDROCK_FILES}
 )
-target_include_directories(regolith PRIVATE
+target_include_directories(Regolith PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/extern/bedrock/include
 )
-target_link_libraries(regolith PRIVATE ${BEDROCK_LIBS})
+target_link_libraries(Regolith PRIVATE ${BEDROCK_LIBS})
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
 
-install(TARGETS regolith
+install(TARGETS Regolith
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib/static)

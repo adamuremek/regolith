@@ -7,13 +7,14 @@ private:
     ZoneID zoneID{0};
     bool instantiated{false};
 
+
 public:
     std::unordered_map<PlayerID, rPlayer*> playersInZone;
     std::unordered_map<EntityInstanceID, rEntity*> entitiesInZone;
 
     // Zone events
-    Bedrock::Event<> onLoadedZone;
-    Bedrock::Event<PlayerID> onPlayerLoadedZone;
+    Bedrock::Event<void> onLoadedZone;
+    Bedrock::Event<void, PlayerID> onPlayerLoadedZone;
 
     virtual void EngineHook_instantiateZoneStart(){}
     virtual void EngineHook_instantiateZoneFinish(){}

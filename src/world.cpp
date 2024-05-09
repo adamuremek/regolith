@@ -360,8 +360,12 @@ void rWorld::startWorld(uint16_t port) {
 
     // Register server side callbacks
     Bedrock::MessageCallbackRegistry::singleton().registerCallback<rControlMsg>(callbacks);
-    Bedrock::onClientConnect.subscribe(this, &rWorld::playerConnected);
-    Bedrock::onClientDisconnect.subscribe(this, &rWorld::playerDisconnected);
+
+    Bedrock::EventCallback<void, const Bedrock::ClientID&> connectCallback(this, &rWorld::playerConnected);
+    Bedrock::EventCallback<void, const Bedrock::ClientID&> disconnectCallback(this, &rWorld::playerDisconnected);
+
+    Bedrock::onClientConnect.subscribe(connectCallback);
+    Bedrock::onClientDisconnect.subscribe(disconnectCallback);
 
     Bedrock::init();
     Bedrock::startDedicatedHost(port);
