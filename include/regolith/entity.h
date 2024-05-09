@@ -10,8 +10,8 @@ public:
     Bedrock::EventCallback<void> csFlushCallback;
     static inline Bedrock::Event<void> flushAllEntityMessages;
 
-    rEntity() : ssFlushCallback(this, &rEntity::ssFlushMessages), csFlushCallback(this, &rEntity::csFlushMessages),
-                p_parentZone{nullptr} {}
+    rEntity() : p_parentZone{nullptr}, ssFlushCallback(this, &rEntity::ssFlushMessages),
+                csFlushCallback(this, &rEntity::csFlushMessages) {}
 
     ~rEntity() = default;
 
