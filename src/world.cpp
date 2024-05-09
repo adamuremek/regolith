@@ -86,7 +86,7 @@ void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
 void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement
     PlayerID playerID = inMsg.playerID;
-    rPlayer* player = playerByPlayerID[playerID];
+    rPlayer *player = playerByPlayerID[playerID];
 
     //Confirm that the player info has been created on the client's end
     player->confirmPlayerLoaded(inMsg.allocatedPlayer);
@@ -94,19 +94,19 @@ void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Me
 
 void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player and the zone that the player has left
-    rZone* targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
-    rPlayer* leavingPlayer = playerByPlayerID[inMsg.playerID];
+    rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
+    rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
 
 
     // Make the zone with the provided ID exists
-    if(targetZone){
+    if (targetZone) {
         // Remove the player from the zone
         targetZone->removePlayer(leavingPlayer);
 
         //Tell remaining players in zone to remove the player locally
-        for(const auto& pair : targetZone->playersInZone){
+        for (const auto &pair: targetZone->playersInZone) {
             //Skip the leaving player in case they are encountered
-            if(pair.second == leavingPlayer){
+            if (pair.second == leavingPlayer) {
                 continue;
             }
 
@@ -123,13 +123,13 @@ void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
 
     // Make sure the requested zone exists
-    if(zone){
+    if (zone) {
         // Try to instantiate the zone (if it hasn't already been)
         zone->instantiateZone();
 
         // Tell the player to load the zone locally on their end
         Bedrock::serializeType(inMsg, outMsg);
-    }else{
+    } else {
         // Tell the player that the zone could not load due to an invalid ID.
         inMsg.msgType = MessageType::LOAD_ZONE_FAILED_INVALID_ID;
         Bedrock::serializeType(inMsg, outMsg);
@@ -138,7 +138,7 @@ void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
 void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement and the zone they loaded in (by ID)
-    rPlayer* player = playerByPlayerID[inMsg.playerID];
+    rPlayer *player = playerByPlayerID[inMsg.playerID];
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
 
@@ -147,7 +147,7 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
 
     // If the loading player is the only one in the zone, just advance to loading the entities.
     // Otherwise, load in the players currently in the zone first then load the entities.
-    if(zone->playersInZone.size() == 1){
+    if (zone->playersInZone.size() == 1) {
         // IMPORTANT: mark that the player has loaded in all other players (since there are none in the zone).
         // Otherwise, the server will make this player load in all entities in the zone again
         // when another player loads into the zone.
@@ -155,14 +155,14 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
 
         // Now make the player load all entities that are currently in the zone
         player->loadEntitiesInCurrentZone();
-    }else{
+    } else {
         //Tell all current players in the zone that a new player in loading in.
         //Also tell the new player to load in all other players in the zone.
         //The loading player should not be in the zone yet server side, so we don't have to worry
         //about checking that.
-        for(const auto& pair : zone->playersInZone){
+        for (const auto &pair: zone->playersInZone) {
             // Skip the playing being loaded since they (should have) already loaded themselves
-            if(pair.second == player){
+            if (pair.second == player) {
                 rDebug::log("skipping current player :)");
                 continue;
             }
@@ -180,9 +180,9 @@ void rWorld::ssLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     rDebug::log("Create entity request recieved!");
     // Get the zone where the entity needs to be loaded into
     ZoneID parentZoneID = inMsg.entityInfo.parentZone;
-    rZone* parentZone = rZoneRegistry::getInstance().getZoneByID(parentZoneID);
+    rZone *parentZone = rZoneRegistry::getInstance().getZoneByID(parentZoneID);
 
-    if(parentZone){
+    if (parentZone) {
         parentZone->loadEntity(inMsg.entityInfo);
     }
 
@@ -191,7 +191,7 @@ void rWorld::ssLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
 void rWorld::ssLoadEntityAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement
-    rPlayer* player = playerByPlayerID[inMsg.playerID];
+    rPlayer *player = playerByPlayerID[inMsg.playerID];
 
     // Confirm that the end client has loaded this entity (remove from ACK buffer)
     player->confirmEntityLoaded(inMsg.entityInfo.instanceID);
@@ -258,8 +258,8 @@ void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outM
 
 void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the zone object being left and the leaving player
-    rZone* targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
-    rPlayer* leavingPlayer = playerByPlayerID[inMsg.playerID];
+    rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
+    rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
 
     // Remove the player from the zone
     targetZone->removePlayer(leavingPlayer);
@@ -268,10 +268,10 @@ void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
 void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the zone id that the server wants instantiated
     ZoneID zoneID = inMsg.zoneID;
-    rZone* zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
+    rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
 
     // Make sure requested zone exists
-    if(zone){
+    if (zone) {
         // Add the local player to the zone
         zone->addPlayer(localPlayer);
 
@@ -282,20 +282,20 @@ void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         inMsg.msgType = MessageType::LOAD_ZONE_ACKNOWLEDGE;
         inMsg.playerID = localPlayer->getPlayerID();
         Bedrock::serializeType(inMsg, outMsg);
-    } else{
+    } else {
         rDebug::err("[ERR] Could not locate the requested zone by given ID!");
     }
 }
 
 void rWorld::csLoadZoneComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the specified zone that was loaded
-    rZone* zone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
+    rZone *zone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
 
     // Fire the zone's player loaded event
     zone->onPlayerLoadedZone.invoke(inMsg.playerID);
 
     // If the player that loaded in was this local player, then fire the local version of the event
-    if(inMsg.playerID == localPlayer->getPlayerID()){
+    if (inMsg.playerID == localPlayer->getPlayerID()) {
         zone->onLoadedZone.invoke();
     }
 }
@@ -304,10 +304,10 @@ void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     rDebug::log("Create entity rquest recieved!");
     // Get the zone where the entity needs to be loaded into
     ZoneID parentZoneID = inMsg.entityInfo.parentZone;
-    rZone* parentZone = rZoneRegistry::getInstance().getZoneByID(parentZoneID);
+    rZone *parentZone = rZoneRegistry::getInstance().getZoneByID(parentZoneID);
 
     // Make sure the relevant zone exists
-    if(parentZone){
+    if (parentZone) {
         //Create the entity
         parentZone->createEntity(inMsg.entityInfo);
 
@@ -315,13 +315,13 @@ void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         inMsg.msgType = MessageType::CREATE_ENTITY_ACKNOWLEDGE;
         inMsg.playerID = localPlayer->getPlayerID();
         Bedrock::serializeType(inMsg, outMsg);
-    }else{
+    } else {
         rDebug::err("Parent zone ID does not exist when creating entity!");
     }
 }
 
 void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    switch(inMsg.msgType){
+    switch (inMsg.msgType) {
         case MessageType::ASSIGN_PLAYER_ID:
             csAssignPlayerID(inMsg, outMsg);
             break;
@@ -350,19 +350,17 @@ void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
 
 void rWorld::startWorld(Port port) {
-    if (!Bedrock::isInitialized) {
+    if (Bedrock::isInitialized) {
         return;
     }
 
-    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg){
+    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg) {
         this->ssHandleControlMsg(inMsg, outMsg);
     };
-
     // Register server side callbacks
     Bedrock::MessageCallbackRegistry::singleton().registerCallback<rControlMsg>(callbacks);
-
-    Bedrock::EventCallback<void, const Bedrock::ClientID&> connectCallback(this, &rWorld::playerConnected);
-    Bedrock::EventCallback<void, const Bedrock::ClientID&> disconnectCallback(this, &rWorld::playerDisconnected);
+    Bedrock::EventCallback<void, const Bedrock::ClientID &> connectCallback(this, &rWorld::playerConnected);
+    Bedrock::EventCallback<void, const Bedrock::ClientID &> disconnectCallback(this, &rWorld::playerDisconnected);
 
     Bedrock::onClientConnect.subscribe(connectCallback);
     Bedrock::onClientDisconnect.subscribe(disconnectCallback);
@@ -379,11 +377,11 @@ void rWorld::stopWorld() {
 }
 
 void rWorld::joinWorld(const char *world, Port port) {
-    if (!Bedrock::isInitialized) {
+    if (Bedrock::isInitialized) {
         return;
     }
 
-    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg){
+    auto callbacks = [this](rControlMsg &inMsg, Bedrock::Message &outMsg) {
         this->csHandleControlMsg(inMsg, outMsg);
     };
 

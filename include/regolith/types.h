@@ -8,6 +8,11 @@ using ZoneID = uint32_t;
 using PropertyID_t = uint32_t;
 using Port = uint16_t;
 
+enum class StatusCode{
+    SUCCESS,
+
+};
+
 enum class MessageType : uint8_t {
     NONE,
     ASSIGN_PLAYER_ID,
