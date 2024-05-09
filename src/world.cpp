@@ -369,6 +369,7 @@ void rWorld::startWorld(Port port) {
 
     Bedrock::init();
     Bedrock::startDedicatedHost(port);
+    rDebug::log("Started host!");
 }
 
 void rWorld::stopWorld() {
