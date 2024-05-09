@@ -349,7 +349,7 @@ void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 
-void rWorld::startWorld(uint16_t port) {
+void rWorld::startWorld(Port port) {
     if (!Bedrock::isInitialized) {
         return;
     }
@@ -377,7 +377,7 @@ void rWorld::stopWorld() {
     Bedrock::clearEventCallbacks();
 }
 
-void rWorld::joinWorld(const char *world, int port) {
+void rWorld::joinWorld(const char *world, Port port) {
     if (!Bedrock::isInitialized) {
         return;
     }

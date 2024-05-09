@@ -39,10 +39,10 @@ public:
     Bedrock::Event<void, PlayerID> onPlayerJoinWorld;
 
 
-    void startWorld(uint16_t port);
+    void startWorld(Port port);
     void stopWorld();
 
-    void joinWorld(const char* world, int port);
+    void joinWorld(const char* world, Port port);
 //    void leaveWorld();
 //
 //    bool load_zone_by_name(String zoneName);
