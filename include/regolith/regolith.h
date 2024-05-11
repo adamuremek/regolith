@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <stack>
+#include <sstream>
 #include <functional>
 
 class rZone;

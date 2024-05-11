@@ -1,6 +1,6 @@
 #include "regolith/regolith.h"
 
-
+/*======================ZONE IMPLEMENTATION======================*/
 bool rZone::instantiateZone() {
     // Just in case this method is called when the zone is already instantiated
     if (instantiated) {
@@ -208,3 +208,38 @@ rPlayer *rZone::getPlayer(const PlayerID &playerID) const {
     return nullptr;
 }
 
+/*======================ZONE REGISTRY IMPLEMENTATION======================*/
+
+rStatusCode rZoneRegistry::registerZone(rZone *zone) {
+    ZoneID id = zone->getZoneID();
+
+    if(registry.find(id) != registry.end()){
+        rDebug::err("There is already a zone registered with ID: %d", id);
+        return rStatusCode::REGISTER_ZONE_FAILED;
+    }else{
+        registry[id] = zone;
+        return rStatusCode::SUCCESS;
+    }
+}
+
+rStatusCode rZoneRegistry::unregisterZone(rZone *zone) {
+    ZoneID id = zone->getZoneID();
+
+    if(registry.find(id) != registry.end()){
+        registry.erase(id);
+        return rStatusCode::SUCCESS;
+    }else{
+        rDebug::err("There are no zones registered with ID: %d", id);
+        return rStatusCode::UNREGISTER_ZONE_FAILED;
+    }
+}
+
+
+rZone *rZoneRegistry::getZoneByID(const ZoneID &zoneID) {
+    auto it = registry.find(zoneID);
+    if(it != registry.end()){
+        return it->second;
+    }else{
+        return nullptr;
+    }
+}

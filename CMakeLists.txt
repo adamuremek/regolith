@@ -29,7 +29,10 @@ target_include_directories(Regolith PRIVATE
 )
 target_link_libraries(Regolith PRIVATE ${BEDROCK_LIBS})
 
-set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
+#Install in binary dir
+#set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
+#Install straight to godot
+set(CMAKE_INSTALL_PREFIX  "C:/Users/aruem/Desktop/godot/modules/TEST_MODULE/${PROJECT_NAME}-${PROJECT_VERSION}")
 
 install(TARGETS Regolith
         RUNTIME DESTINATION bin

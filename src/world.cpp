@@ -396,6 +396,8 @@ void rWorld::joinWorld(const char *world, Port port) {
 
     //Create local player info object to store info in
     localPlayer = new rPlayer;
+
+    rDebug::log("Joined world!");
 }
 
 //void rWorld::leaveWorld() {

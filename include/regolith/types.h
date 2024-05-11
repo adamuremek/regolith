@@ -8,9 +8,10 @@ using ZoneID = uint32_t;
 using PropertyID_t = uint32_t;
 using Port = uint16_t;
 
-enum class StatusCode{
+enum class rStatusCode{
     SUCCESS,
-
+    REGISTER_ZONE_FAILED,
+    UNREGISTER_ZONE_FAILED
 };
 
 enum class MessageType : uint8_t {
