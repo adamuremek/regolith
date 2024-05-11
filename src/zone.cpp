@@ -27,17 +27,20 @@ rStatusCode rZone::instantiateZone() {
     return rStatusCode::SUCCESS;
 }
 
-void rZone::uninstantiateZone() {
+rStatusCode rZone::uninstantiateZone() {
     // Destroy all entities in the zone
     for(const auto& pair : entitiesInZone){
         destroyEntity(pair.second);
     }
 
     // Clear all players from the zone
+    // note for later: prob want to cache then clear so it can be restored
     playersInZone.clear();
 
     // Invoke engine specific code to clean up the zone game object
-    EngineHook_uninstantiateZone();
+    if(EngineHook_uninstantiateZone() != rStatusCode::SUCCESS){
+        return rStatusCode::UNINSTANTIATE_ZONE_FAILED;
+    }
 
     // Mark that the zone is no longer instantiated
     instantiated = false;
@@ -49,7 +52,7 @@ void rZone::addPlayer(rPlayer *player) {
     // Add this zone to the player's list of loaded zones
     player->setCurrentZone(this);
     // Invoke engine specific code for when a player joins
-    EngineHook_playerJoinedZone(player);
+    // TODO: reconsider this: EngineHook_playerJoinedZone(player);
 }
 
 void rZone::removePlayer(rPlayer *player) {
@@ -73,7 +76,7 @@ void rZone::removePlayer(rPlayer *player) {
     playersInZone.erase(playerID);
 
     // Invoke engine specific code for when a player leaves the zone
-    EngineHook_playerLeftZone(player);
+    // TODO: reconsider this: EngineHook_playerLeftZone(player);
 
     //Reset the player's zone information
     player->clearZoneInfo();

@@ -22,7 +22,7 @@ public:
     Bedrock::Event<void, PlayerID> onPlayerLoadedZone;
 
     rStatusCode instantiateZone();
-    void uninstantiateZone();
+    rStatusCode uninstantiateZone();
 
     void addPlayer(rPlayer* player);
     void removePlayer(rPlayer* player);
