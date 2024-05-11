@@ -8,7 +8,7 @@ using ZoneID = uint32_t;
 using PropertyID_t = uint32_t;
 using Port = uint16_t;
 
-REGOLITH_API enum class rStatusCode{
+enum class rStatusCode{
     SUCCESS,
     REGISTER_ZONE_FAILED,
     UNREGISTER_ZONE_FAILED,

@@ -24,9 +24,9 @@ public:
     std::function<rStatusCode()> EngineHook_uninstantiateZoneFunc;
 
     // Engine hook implementation through polymorphism
-    virtual rStatusCode EngineHook_instantiateZoneStart();
-    virtual rStatusCode EngineHook_instantiateZoneFinish();
-    virtual rStatusCode EngineHook_uninstantiateZone();
+    REGOLITH_API virtual rStatusCode EngineHook_instantiateZoneStart();
+    REGOLITH_API virtual rStatusCode EngineHook_instantiateZoneFinish();
+    REGOLITH_API virtual rStatusCode EngineHook_uninstantiateZone();
 
     void addPlayer(rPlayer* player);
     void removePlayer(rPlayer* player);
