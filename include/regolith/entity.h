@@ -1,14 +1,14 @@
 #ifndef REGOLITH_ENTITY_H
 #define REGOLITH_ENTITY_H
 
-class REGOLITH_API rEntity {
+class rEntity {
 private:
     rEntityInfo entityInfo;
     rZone *p_parentZone;
 public:
     Bedrock::EventCallback<void> ssFlushCallback;
     Bedrock::EventCallback<void> csFlushCallback;
-    static inline Bedrock::Event<void> flushAllEntityMessages;
+    REGOLITH_API static inline Bedrock::Event<void> flushAllEntityMessages;
 
     rEntity() : p_parentZone{nullptr}, ssFlushCallback(this, &rEntity::ssFlushMessages),
                 csFlushCallback(this, &rEntity::csFlushMessages) {}
@@ -37,9 +37,9 @@ public:
 
     inline void setEntityInfo(const rEntityInfo &info) { entityInfo = info; }
 
-    void ssFlushMessages();
+    REGOLITH_API void ssFlushMessages();
 
-    void csFlushMessages();
+    REGOLITH_API void csFlushMessages();
 
     bool has_ownership();
 };

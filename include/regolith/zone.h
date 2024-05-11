@@ -1,12 +1,17 @@
 #ifndef REGOLITH_ZONE_H
 #define REGOLITH_ZONE_H
 
-class REGOLITH_API rZone {
+class rZone {
 
 private:
     ZoneID zoneID{0};
     bool instantiated{false};
 
+    virtual void EngineHook_instantiateZoneStart(){}
+    virtual void EngineHook_instantiateZoneFinish(){}
+    virtual void EngineHook_uninstantiateZone(){}
+    virtual void EngineHook_playerJoinedZone(rPlayer* player){}
+    virtual void EngineHook_playerLeftZone(rPlayer* player){}
 
 public:
     std::unordered_map<PlayerID, rPlayer*> playersInZone;
@@ -15,12 +20,6 @@ public:
     // Zone events
     Bedrock::Event<void> onLoadedZone;
     Bedrock::Event<void, PlayerID> onPlayerLoadedZone;
-
-    virtual void EngineHook_instantiateZoneStart(){}
-    virtual void EngineHook_instantiateZoneFinish(){}
-    virtual void EngineHook_uninstantiateZone(){}
-    virtual void EngineHook_playerJoinedZone(rPlayer* player){}
-    virtual void EngineHook_playerLeftZone(rPlayer* player){}
 
     bool instantiateZone();
     void uninstantiateZone();
@@ -32,10 +31,10 @@ public:
     rEntity* createEntity(rEntityInfo& entityInfo);
     void destroyEntity(rEntity* entity);
 
-
     bool hasPlayer(PlayerID playerID);
     bool hasPlayer(rPlayer* player);
     inline bool isInstantiated() const { return instantiated; };
+
     inline ZoneID getZoneID() const { return zoneID; }
     rPlayer* getPlayer(const PlayerID& playerID) const;
 
@@ -54,19 +53,14 @@ public:
     rZoneRegistry& operator=(const rZoneRegistry&) = delete;
 
     // Singleton accessor
-    static rZoneRegistry& getInstance(){
+    REGOLITH_API static rZoneRegistry& getInstance(){
         static rZoneRegistry instance;
         return instance;
     }
 
-    inline rZone* getZoneByID(const ZoneID& zoneID){
-        auto it = registry.find(zoneID);
-        if(it != registry.end()){
-            return it->second;
-        }else{
-            return nullptr;
-        }
-    }
+    REGOLITH_API rStatusCode registerZone(rZone* zone);
+    REGOLITH_API rStatusCode unregisterZone(rZone* zone);
+    REGOLITH_API rZone* getZoneByID(const ZoneID& zoneID);
 };
 
 #endif //REGOLITH_ZONE_H

@@ -1,7 +1,7 @@
 #ifndef REGOLITH_WORLD_H
 #define REGOLITH_WORLD_H
 
-class REGOLITH_API rWorld{
+class rWorld{
 private:
     // Server side variables
     std::unordered_map<Bedrock::ClientID, rPlayer*> playerByClientID;
@@ -39,10 +39,10 @@ public:
     Bedrock::Event<void, PlayerID> onPlayerJoinWorld;
 
 
-    void startWorld(Port port);
-    void stopWorld();
+    REGOLITH_API void startWorld(Port port);
+    REGOLITH_API void stopWorld();
 
-    void joinWorld(const char* world, Port port);
+    REGOLITH_API void joinWorld(const char* world, Port port);
 //    void leaveWorld();
 //
 //    bool load_zone_by_name(String zoneName);

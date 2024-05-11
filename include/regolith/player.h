@@ -1,7 +1,7 @@
 #ifndef REGOLITH_PLAYER_INFO_H
 #define REGOLITH_PLAYER_INFO_H
 
-class REGOLITH_API rPlayer{
+class rPlayer{
 private:
     PlayerID playerID{0};
     Bedrock::ClientID clientID{0};
@@ -23,9 +23,6 @@ public:
 
     void loadPlayer(rPlayer* player);
     void confirmPlayerLoaded(PlayerID playerID);
-
-
-
 
     void clearZoneInfo();
 
