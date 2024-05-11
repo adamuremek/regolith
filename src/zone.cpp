@@ -1,6 +1,19 @@
 #include "regolith/regolith.h"
 
 /*======================ZONE IMPLEMENTATION======================*/
+rStatusCode rZone::EngineHook_instantiateZoneStart() {
+    return EngineHook_instantiateZoneStartFunc();
+}
+
+rStatusCode rZone::EngineHook_instantiateZoneFinish(){
+    return EngineHook_instantiateZoneFinishFunc();
+}
+
+rStatusCode rZone::EngineHook_uninstantiateZone() {
+    return EngineHook_uninstantiateZoneFunc();
+}
+
+
 rStatusCode rZone::instantiateZone() {
     // Just in case this method is called when the zone is already instantiated
     if (instantiated) {

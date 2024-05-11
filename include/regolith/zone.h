@@ -7,12 +7,6 @@ private:
     ZoneID zoneID{0};
     bool instantiated{false};
 
-    virtual rStatusCode EngineHook_instantiateZoneStart(){}
-    virtual rStatusCode EngineHook_instantiateZoneFinish(){}
-    virtual rStatusCode EngineHook_uninstantiateZone(){}
-    virtual rStatusCode EngineHook_playerJoinedZone(rPlayer* player){}
-    virtual rStatusCode EngineHook_playerLeftZone(rPlayer* player){}
-
 public:
     std::unordered_map<PlayerID, rPlayer*> playersInZone;
     std::unordered_map<EntityInstanceID, rEntity*> entitiesInZone;
@@ -23,6 +17,18 @@ public:
 
     rStatusCode instantiateZone();
     rStatusCode uninstantiateZone();
+
+    // Engine hook implementation through composition
+    std::function<rStatusCode()> EngineHook_instantiateZoneStartFunc;
+    std::function<rStatusCode()> EngineHook_instantiateZoneFinishFunc;
+    std::function<rStatusCode()> EngineHook_uninstantiateZoneFunc;
+
+    // Engine hook implementation through polymorphism
+    virtual rStatusCode EngineHook_instantiateZoneStart();
+    virtual rStatusCode EngineHook_instantiateZoneFinish();
+    virtual rStatusCode EngineHook_uninstantiateZone();
+    virtual rStatusCode EngineHook_playerJoinedZone(rPlayer* player){}
+    virtual rStatusCode EngineHook_playerLeftZone(rPlayer* player){}
 
     void addPlayer(rPlayer* player);
     void removePlayer(rPlayer* player);
