@@ -1,14 +1,16 @@
 #include "regolith/regolith.h"
 
 /*======================ZONE IMPLEMENTATION======================*/
-bool rZone::instantiateZone() {
+rStatusCode rZone::instantiateZone() {
     // Just in case this method is called when the zone is already instantiated
     if (instantiated) {
-        return false;
+        return rStatusCode::INSTANTIATE_ZONE_FAILED;
     }
 
     // Instantiate the zone game object in the game engine
-    EngineHook_instantiateZoneStart();
+    if(EngineHook_instantiateZoneStart() != rStatusCode::SUCCESS){
+        return rStatusCode::INSTANTIATE_ZONE_FAILED;
+    }
 
     // Indicate that the zone has been instantiated through the boolean flag
     // Gotta call this before adding the instance to the scene otherwise if any entities are
@@ -16,9 +18,13 @@ bool rZone::instantiateZone() {
     instantiated = true;
 
     // Invoke engine specific code for when the zone has been instantiated.
-    EngineHook_instantiateZoneFinish();
+    if(EngineHook_instantiateZoneFinish() != rStatusCode::SUCCESS){
+        // Gotta reset this
+        instantiated = false;
+        return rStatusCode::INSTANTIATE_ZONE_FAILED;
+    }
 
-    return true;
+    return rStatusCode::SUCCESS;
 }
 
 void rZone::uninstantiateZone() {

@@ -7,11 +7,11 @@ private:
     ZoneID zoneID{0};
     bool instantiated{false};
 
-    virtual void EngineHook_instantiateZoneStart(){}
-    virtual void EngineHook_instantiateZoneFinish(){}
-    virtual void EngineHook_uninstantiateZone(){}
-    virtual void EngineHook_playerJoinedZone(rPlayer* player){}
-    virtual void EngineHook_playerLeftZone(rPlayer* player){}
+    virtual rStatusCode EngineHook_instantiateZoneStart(){}
+    virtual rStatusCode EngineHook_instantiateZoneFinish(){}
+    virtual rStatusCode EngineHook_uninstantiateZone(){}
+    virtual rStatusCode EngineHook_playerJoinedZone(rPlayer* player){}
+    virtual rStatusCode EngineHook_playerLeftZone(rPlayer* player){}
 
 public:
     std::unordered_map<PlayerID, rPlayer*> playersInZone;
@@ -21,7 +21,7 @@ public:
     Bedrock::Event<void> onLoadedZone;
     Bedrock::Event<void, PlayerID> onPlayerLoadedZone;
 
-    bool instantiateZone();
+    rStatusCode instantiateZone();
     void uninstantiateZone();
 
     void addPlayer(rPlayer* player);

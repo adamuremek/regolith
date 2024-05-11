@@ -11,7 +11,9 @@ using Port = uint16_t;
 enum class rStatusCode{
     SUCCESS,
     REGISTER_ZONE_FAILED,
-    UNREGISTER_ZONE_FAILED
+    UNREGISTER_ZONE_FAILED,
+    INSTANTIATE_ZONE_FAILED,
+    ENGINEHOOK_ERR
 };
 
 enum class MessageType : uint8_t {
