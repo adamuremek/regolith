@@ -27,8 +27,6 @@ public:
     virtual rStatusCode EngineHook_instantiateZoneStart();
     virtual rStatusCode EngineHook_instantiateZoneFinish();
     virtual rStatusCode EngineHook_uninstantiateZone();
-    virtual rStatusCode EngineHook_playerJoinedZone(rPlayer* player){}
-    virtual rStatusCode EngineHook_playerLeftZone(rPlayer* player){}
 
     void addPlayer(rPlayer* player);
     void removePlayer(rPlayer* player);
