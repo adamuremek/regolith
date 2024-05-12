@@ -97,8 +97,7 @@ void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
     rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
     rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
 
-
-    // Make the zone with the provided ID exists
+    // Make sure the zone with the provided ID exists
     if (targetZone) {
         // Remove the player from the zone
         targetZone->removePlayer(leavingPlayer);
@@ -367,17 +366,20 @@ void rWorld::startWorld(Port port) {
 
     Bedrock::init();
     Bedrock::startDedicatedHost(port);
+
     rDebug::log("Started host!");
 }
 
 void rWorld::stopWorld() {
     Bedrock::shutdown();
-    Bedrock::clearMsgCallbacks();
     Bedrock::clearEventCallbacks();
+    Bedrock::clearMsgCallbacks();
+
+    rDebug::log("Stopped host!");
 }
 
 void rWorld::joinWorld(const char *world, Port port) {
-    if (Bedrock::isInitialized) {
+    if (Bedrock::isInitialized || Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)) {
         return;
     }
 
@@ -400,40 +402,33 @@ void rWorld::joinWorld(const char *world, Port port) {
     rDebug::log("Joined world!");
 }
 
-//void rWorld::leaveWorld() {
-//    if (Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_NONE) ||
-//        Bedrock::BedrockMetadata::getInstance().isRole(ACTOR_SERVER)) {
-//        return;
-//    }
-//
-//    //Check for a zone to unload, and unload it if there is one
-//    rZone *loadedZone = localPlayer->getCurrentZone();
-//    if(loadedZone){
-//        //Remove the player from the zone locally
-//        loadedZone->remove_player(m_localPlayer);
-//
-//        //Destroy the zone locally (for now)
-//        loadedZone->uninstantiate_zone();
-//    }
-//
-//    m_clientRunLoop = false;
-//
-//    //Stop the listen loop
-//    if (m_clientListenThread.joinable()){
-//        m_clientListenThread.join();
-//    }
-//
-//    //Stop the tick loop
-//    if(m_clientTickThread.joinable()){
-//        m_clientTickThread.join();
-//    }
-//
-//    //Stop world connection
-//    SteamNetworkingSockets()->CloseConnection(m_worldConnection, 0, nullptr, false);
-//    m_worldConnection = k_HSteamNetConnection_Invalid;
-//
-//    GDNet::singleton->m_isClient = false;
-//
-//    //Inform signal connections that client has left the world
-//    emit_signal("left_world");
-//}
+void rWorld::leaveWorld() {
+    if (!Bedrock::isInitialized || !Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)) {
+        return;
+    }
+
+    //Check for a zone to unload, and unload it if there is one
+    rZone *loadedZone = localPlayer->getCurrentZone();
+    if(loadedZone){
+        //Remove the player from the zone locally
+        loadedZone->removePlayer(localPlayer);
+
+        //Destroy the zone locally (for now)
+        loadedZone->uninstantiateZone();
+
+        //Inform host
+        rControlMsg msg{};
+        msg.msgType = MessageType::PLAYER_UNLOADED_ZONE;
+        msg.playerID = localPlayer->getPlayerID();
+        msg.zoneID = localPlayer->getCurrentZone()->getZoneID();
+
+        Bedrock::sendToHost(msg);
+    }
+
+    delete localPlayer;
+    Bedrock::shutdown();
+    Bedrock::clearEventCallbacks();
+    Bedrock::clearMsgCallbacks();
+
+    rDebug::log("Left World!");
+}

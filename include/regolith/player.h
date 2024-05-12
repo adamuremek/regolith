@@ -24,12 +24,12 @@ public:
     void loadPlayer(rPlayer* player);
     void confirmPlayerLoaded(PlayerID playerID);
 
+
     void clearZoneInfo();
 
     [[nodiscard]] inline PlayerID getPlayerID() const { return playerID; }
     [[nodiscard]] inline Bedrock::ClientID getClientID() const { return clientID; }
     [[nodiscard]] inline rZone* getCurrentZone() const { return p_currentZone; }
-
 
     inline void setPlayerID(const PlayerID& newPlayerID) { playerID = newPlayerID; }
     inline void setClientID(const Bedrock::ClientID& newClientID) { clientID = newClientID; }

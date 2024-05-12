@@ -43,7 +43,7 @@ public:
     REGOLITH_API void stopWorld();
 
     REGOLITH_API void joinWorld(const char* world, Port port);
-//    void leaveWorld();
+    REGOLITH_API void leaveWorld();
 //
 //    bool load_zone_by_name(String zoneName);
 //    bool load_zone_by_id(ZoneID_t zoneId);
