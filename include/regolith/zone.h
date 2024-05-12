@@ -7,7 +7,7 @@ private:
     const static size_t ZONE_NAME_MAX_LEN = 20;
 
     ZoneID zoneID{0};
-    char zoneName[ZONE_NAME_MAX_LEN]{};
+    char zoneName[ZONE_NAME_MAX_LEN + 1]{}; // Add 1 more to size for null terminating char
     bool instantiated{false};
 
 public:
@@ -42,12 +42,12 @@ public:
     bool hasPlayer(rPlayer* player);
     inline bool isInstantiated() const { return instantiated; };
 
-    inline ZoneID getZoneID() const { return zoneID; }
-    const char* getZoneName() const { return zoneName; }
-    rPlayer* getPlayer(const PlayerID& playerID) const;
+    REGOLITH_API inline ZoneID getZoneID() const { return zoneID; }
+    REGOLITH_API const char* getZoneName() const { return zoneName; }
+    REGOLITH_API rPlayer* getPlayer(const PlayerID& playerID) const;
 
-    inline void setZoneID(const ZoneID& newZoneID) { zoneID = newZoneID; }
-    void setZoneName(const char* name);
+    REGOLITH_API inline void setZoneID(const ZoneID& newZoneID) { zoneID = newZoneID; }
+    REGOLITH_API void setZoneName(const char* name);
 };
 
 class rZoneRegistry{
@@ -70,6 +70,7 @@ public:
     REGOLITH_API rStatusCode registerZone(rZone* zone);
     REGOLITH_API rStatusCode unregisterZone(rZone* zone);
     REGOLITH_API rZone* getZoneByID(const ZoneID& zoneID);
+    REGOLITH_API rZone* getZoneByName(const char* zoneName);
 };
 
 #endif //REGOLITH_ZONE_H

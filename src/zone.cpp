@@ -232,9 +232,9 @@ rPlayer *rZone::getPlayer(const PlayerID &playerID) const {
 
 void rZone::setZoneName(const char *name) {
     size_t nameLen = strlen(name);
-    size_t copySize = nameLen >= 19 ? 19 : nameLen;
+    size_t copySize = nameLen >= ZONE_NAME_MAX_LEN ? ZONE_NAME_MAX_LEN : nameLen;
 
-    strncpy_s(zoneName, ZONE_NAME_MAX_LEN, name, copySize);
+    strncpy_s(zoneName, ZONE_NAME_MAX_LEN + 1, name, copySize);
     zoneName[copySize] = '\0';
 }
 
@@ -242,9 +242,22 @@ void rZone::setZoneName(const char *name) {
 
 rStatusCode rZoneRegistry::registerZone(rZone *zone) {
     ZoneID id = zone->getZoneID();
+    const char* name = zone->getZoneName();
+    bool idExists = false, nameExists = false;
 
-    if(registry.find(id) != registry.end()){
-        rDebug::err("There is already a zone registered with ID: %d", id);
+    for(const auto& pair : registry){
+        if(pair.first == id){
+            idExists = true;
+            rDebug::err("There is already a zone registered with ID: %d", id);
+        }
+
+        if(strcmp(pair.second->getZoneName(), name) == 0){
+            nameExists = true;
+            rDebug::err("There is already a zone registered with name: %s", name);
+        }
+    }
+
+    if(idExists || nameExists){
         return rStatusCode::REGISTER_ZONE_FAILED;
     }else{
         registry[id] = zone;
@@ -272,4 +285,14 @@ rZone *rZoneRegistry::getZoneByID(const ZoneID &zoneID) {
     }else{
         return nullptr;
     }
+}
+
+rZone *rZoneRegistry::getZoneByName(const char *zoneName) {
+    for(const auto& pair : registry){
+        if(strcmp(pair.second->getZoneName(), zoneName) == 0){
+            return pair.second;
+        }
+    }
+
+    return nullptr;
 }
