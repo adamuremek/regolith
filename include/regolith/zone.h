@@ -4,7 +4,10 @@
 class rZone {
 
 private:
+    const static size_t ZONE_NAME_MAX_LEN = 20;
+
     ZoneID zoneID{0};
+    char zoneName[ZONE_NAME_MAX_LEN]{};
     bool instantiated{false};
 
 public:
@@ -40,9 +43,11 @@ public:
     inline bool isInstantiated() const { return instantiated; };
 
     inline ZoneID getZoneID() const { return zoneID; }
+    const char* getZoneName() const { return zoneName; }
     rPlayer* getPlayer(const PlayerID& playerID) const;
 
     inline void setZoneID(const ZoneID& newZoneID) { zoneID = newZoneID; }
+    void setZoneName(const char* name);
 };
 
 class rZoneRegistry{

@@ -230,6 +230,14 @@ rPlayer *rZone::getPlayer(const PlayerID &playerID) const {
     return nullptr;
 }
 
+void rZone::setZoneName(const char *name) {
+    size_t nameLen = strlen(name);
+    size_t copySize = nameLen >= 19 ? 19 : nameLen;
+
+    strncpy_s(zoneName, ZONE_NAME_MAX_LEN, name, copySize);
+    zoneName[copySize] = '\0';
+}
+
 /*======================ZONE REGISTRY IMPLEMENTATION======================*/
 
 rStatusCode rZoneRegistry::registerZone(rZone *zone) {
