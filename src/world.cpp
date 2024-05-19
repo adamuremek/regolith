@@ -414,14 +414,16 @@ void rWorld::joinWorld(const char *world, Port port) {
     // Register client side callbacks
     Bedrock::MessageCallbackRegistry::singleton().registerCallback<rControlMsg>(callbacks);
 
+    //Create local player info object to store info in
+    localPlayer = new rPlayer;
+
     //Connect to world
     Bedrock::init();
     if (!Bedrock::startClient(port, world)) {
         return;
     }
+    //TODO: localplayer is probably needed before the client joins server, that may be whats causing a crash.
 
-    //Create local player info object to store info in
-    localPlayer = new rPlayer;
 
     rDebug::log("Joined world!");
 }
