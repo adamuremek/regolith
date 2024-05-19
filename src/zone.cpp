@@ -57,6 +57,8 @@ rStatusCode rZone::uninstantiateZone() {
 
     // Mark that the zone is no longer instantiated
     instantiated = false;
+
+    return rStatusCode::SUCCESS;
 }
 
 void rZone::addPlayer(rPlayer *player) {

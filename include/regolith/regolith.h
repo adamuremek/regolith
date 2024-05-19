@@ -2,10 +2,14 @@
 #define REGOLITH_H
 
 #ifdef _WIN32
-    #ifdef REGOLITH_DLL
-        #define REGOLITH_API __declspec(dllexport)
+    #ifdef BUILD_SHARED_LIB
+        #ifdef REGOLITH_DLL
+            #define REGOLITH_API __declspec(dllexport)
+        #else
+            #define REGOLITH_API __declspec(dllimport)
+        #endif
     #else
-        #define REGOLITH_API __declspec(dllimport)
+        #define REGOLITH_API
     #endif
 #else
     #define REGOLITH_API
@@ -22,6 +26,8 @@
 class rZone;
 class rEntity;
 class rComponent;
+
+
 
 #include "debug.h"
 #include "types.h"

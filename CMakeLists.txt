@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.27)
 project(Regolith VERSION 1.0)
 
 set(CMAKE_CXX_STANDARD 17)
+set(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-set(BUILD_SHARED_LIBS ON)
 
 # Import Bedrock
 add_subdirectory(extern/bedrock)
@@ -15,7 +15,13 @@ add_definitions(
 )
 endif ()
 
-add_library(Regolith
+if (BUILD_SHARED_LIBS)
+    set(LIBRARY_TYPE SHARED)
+else()
+    set(LIBRARY_TYPE STATIC)
+endif()
+
+add_library(Regolith STATIC
         src/world.cpp
         src/zone.cpp
         src/id_generator.cpp
@@ -27,12 +33,12 @@ target_include_directories(Regolith PRIVATE
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/extern/bedrock/include
 )
-target_link_libraries(Regolith PRIVATE ${BEDROCK_LIBS})
+target_link_libraries(Regolith PUBLIC ${BEDROCK_LIBS})
 
 #Install in binary dir
 #set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/${PROJECT_NAME}-${PROJECT_VERSION}")
 #Install straight to godot
-set(CMAKE_INSTALL_PREFIX  "C:/Users/aruem/Desktop/godot/modules/TEST_MODULE/${PROJECT_NAME}-${PROJECT_VERSION}")
+set(CMAKE_INSTALL_PREFIX  "C:/Users/aruem/Desktop/godot-4.2.2-stable/modules/TEST_MODULE/${PROJECT_NAME}-${PROJECT_VERSION}")
 
 install(TARGETS Regolith
         RUNTIME DESTINATION bin
