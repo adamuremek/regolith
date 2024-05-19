@@ -34,7 +34,7 @@ void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
     playerByPlayerID[newPlayerID] = newPlayer;
     rDebug::log("H");
     // Fire the player join world event (server side)
-    onPlayerJoinWorld.invoke(newPlayerID);
+    onPlayerJoinedWorld.invoke(newPlayerID);
     rDebug::log("I");
 }
 
@@ -240,7 +240,7 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     onJoinedWorld.invoke();
 
     // Fire the player join world event (client side)
-    onPlayerJoinWorld.invoke(playerID);
+    onPlayerJoinedWorld.invoke(playerID);
 }
 
 void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outMsg) {

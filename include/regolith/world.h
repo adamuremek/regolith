@@ -36,7 +36,7 @@ private:
 public:
     // World Events
     Bedrock::Event<void> onJoinedWorld;
-    Bedrock::Event<void, PlayerID> onPlayerJoinWorld;
+    Bedrock::Event<void, PlayerID> onPlayerJoinedWorld;
     REGOLITH_API rWorld();
     REGOLITH_API ~rWorld();
 
