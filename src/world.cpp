@@ -419,11 +419,9 @@ void rWorld::joinWorld(const char *world, Port port) {
 
     //Connect to world
     Bedrock::init();
-    if (!Bedrock::startClient(port, world)) {
+    if (Bedrock::startClient(port, world) != Bedrock::StatusCode::SUCCESS) {
         return;
     }
-    //TODO: localplayer is probably needed before the client joins server, that may be whats causing a crash.
-
 
     rDebug::log("Joined world!");
 }
