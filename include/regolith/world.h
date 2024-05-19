@@ -35,10 +35,12 @@ private:
 
 public:
     // World Events
-    Bedrock::Event<void> onJoinedWorld;
-    Bedrock::Event<void, PlayerID> onPlayerJoinedWorld;
-    REGOLITH_API rWorld();
-    REGOLITH_API ~rWorld();
+    Bedrock::Event<void> onWorldStart;
+    Bedrock::Event<void> onWorldStop;
+    Bedrock::Event<void> onWorldJoin;
+    Bedrock::Event<void, PlayerID> onWorldPlayerJoin;
+    Bedrock::Event<void> onWorldLeave;
+    Bedrock::Event<void, PlayerID> onWorldPlayerLeave;
 
 
     REGOLITH_API void startWorld(Port port);

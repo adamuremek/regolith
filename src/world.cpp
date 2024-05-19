@@ -1,41 +1,33 @@
 #include "regolith/regolith.h"
 
-
 void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
-    rDebug::log("A %d", playerByClientID.size());
-    rDebug::log("Current mem location %p", static_cast<void*>(&playerByClientID));
-    auto cunt = playerByClientID.find(1);
-    rDebug::log("FAGGIT", clientID);
     // Make sure the connecting player isn't already connected (should be very rare, but just in case :D )
     if (playerByClientID.find(clientID) != playerByClientID.end()) {
-        rDebug::log("A1");
         return;
     }
-    rDebug::log("B");
+
     // Allocate player info
     auto *newPlayer = new rPlayer;
-    rDebug::log("C");
+
     // Generate a network identifier for the player
     PlayerID newPlayerID = generatePlayerID();
-    rDebug::log("D");
+
     // Populate player info
     newPlayer->setClientID(clientID);
     newPlayer->setPlayerID(newPlayerID);
-    rDebug::log("E");
+
     // Send the player their ID
     rControlMsg msg{};
     msg.msgType = MessageType::ASSIGN_PLAYER_ID;
     msg.playerID = newPlayerID;
-    rDebug::log("F");
     Bedrock::sendToClient(msg, clientID);
-    rDebug::log("G");
+
     // Add player to a map keyed by client id, and a map keyed by id
     playerByClientID[clientID] = newPlayer;
     playerByPlayerID[newPlayerID] = newPlayer;
-    rDebug::log("H");
+
     // Fire the player join world event (server side)
-    onPlayerJoinedWorld.invoke(newPlayerID);
-    rDebug::log("I");
+    onWorldPlayerJoin.invoke(newPlayerID);
 }
 
 void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
@@ -82,6 +74,9 @@ void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
         playerByPlayerID.erase(playerID);
 
         //TODO: Maybe force close connection if you can? For cases where the server wants to force disconnect client
+
+        // Fire player leave world event
+        onWorldPlayerLeave.invoke(player->getPlayerID());
 
         // Free player memory allocation
         delete player;
@@ -237,10 +232,10 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     playerByPlayerID[playerID] = localPlayer;
 
     // Fire the join world event for this local client only.
-    onJoinedWorld.invoke();
+    onWorldJoin.invoke();
 
     // Fire the player join world event (client side)
-    onPlayerJoinedWorld.invoke(playerID);
+    onWorldPlayerJoin.invoke(playerID);
 }
 
 void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -353,26 +348,7 @@ void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     }
 }
 
-rWorld::rWorld() {
-//    rDebug::log("START %d", playerByClientID.size());
-//    rDebug::log("Initial mem location %p", static_cast<void*>(&playerByClientID));
-//    auto cunt = playerByClientID.find(1);
-    rDebug::log("FAG");
-}
-
-rWorld::~rWorld(){
-    rDebug::log("AHHH");
-//    playerByClientID.clear();
-//    playerByPlayerID.clear();
-    rDebug::log("KILL YOURSLEF PRETTY PLZZZ");
-}
-
-
 void rWorld::startWorld(Port port) {
-    rDebug::log("A %d", playerByClientID.size());
-    rDebug::log("Initial mem location %p", static_cast<void*>(&playerByClientID));
-    auto cunt = playerByClientID.find(1);
-
     if (Bedrock::isInitialized) {
         return;
     }
@@ -391,7 +367,7 @@ void rWorld::startWorld(Port port) {
     Bedrock::init();
     Bedrock::startDedicatedHost(port);
 
-    rDebug::log("Started host!");
+    onWorldStart.invoke();
 }
 
 void rWorld::stopWorld() {
@@ -399,7 +375,7 @@ void rWorld::stopWorld() {
     Bedrock::clearEventCallbacks();
     Bedrock::clearMsgCallbacks();
 
-    rDebug::log("Stopped host!");
+    onWorldStop.invoke();
 }
 
 void rWorld::joinWorld(const char *world, Port port) {
@@ -422,8 +398,6 @@ void rWorld::joinWorld(const char *world, Port port) {
     if (Bedrock::startClient(port, world) != Bedrock::StatusCode::SUCCESS) {
         return;
     }
-
-    rDebug::log("Joined world!");
 }
 
 void rWorld::leaveWorld() {
@@ -454,5 +428,5 @@ void rWorld::leaveWorld() {
     Bedrock::clearEventCallbacks();
     Bedrock::clearMsgCallbacks();
 
-    rDebug::log("Left World!");
+    onWorldLeave.invoke();
 }
