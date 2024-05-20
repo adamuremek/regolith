@@ -204,7 +204,7 @@ void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
         awaitingPlayerDeallocation.clear();
 
         // Reclaim any leaked player IDs
-        reclaimPlayerIDs();
+        //reclaimPlayerIDs();
 
     } else{
         // Send the message to all remaining players
