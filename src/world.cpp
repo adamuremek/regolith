@@ -1,5 +1,11 @@
 #include "regolith/regolith.h"
 
+/* TODO 1: So when a player leaves the world, their player ID should be recycled for the next player when they join.
+ * However, this comes with a pretty big caveat; all players that are currently in the world must acknowledge that
+ * they have freed up the player from their cache. Otherwise, the server could reuse a player's id when one of the end
+ * players didnt free up that id yet, and that new player will take on data from the old player on the clients' ends
+ * that they shouldnt. TLDR: make sure all clients free up removed players and send an ack to the server.*/
+
 /*========================== SHARED CALLBACKS =========================*/
 
 void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
@@ -91,11 +97,10 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
 
         // Uninstantiate the zone (client side)
         return zone->uninstantiateZone();
-        rDebug::log("D");
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         rDebug::log("E");
         // Uninstantiate the zone (server side)
-        return zone->instantiateZone();
+        return zone->uninstantiateZone();
     }
     rDebug::log("F");
     return rStatusCode::UNLOAD_ZONE_FAILED;
@@ -531,6 +536,7 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
     // Proceed to unload the zone if it was found from the registry, otherwise return appropriate error
     if(zone){
         return unloadZone(zone);
+        rDebug::log("D");
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
