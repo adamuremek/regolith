@@ -8,53 +8,66 @@
 
 /*========================== SHARED CALLBACKS =========================*/
 
-void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
-    // Remove the player info from the connection keyed map and the id keyed map if they exist
-    auto it = playerByClientID.find(clientID);
-    if (it != playerByClientID.end()) {
-        // Assign found value to a variable
-        rPlayer *player = it->second;
-        PlayerID playerID = player->getPlayerID();
+//void rWorld::removePlayer(const Bedrock::ClientID &clientID) {
+//    // Check to see if the player exists (by connection)
+//    auto it = playerByClientID.find(clientID);
+//    if (it == playerByClientID.end()){
+//        rDebug::err("Player by client ID %d does not exist!", clientID);
+//        return;
+//    }
+//
+//    // Assign found value to a variable
+//    rPlayer *player = it->second;
+//    PlayerID playerID = player->getPlayerID();
+//
+////    // Try to get the zone the player is currently loaded into:
+////    rZone *currentZone = player->getCurrentZone();
+////
+////    // If the player is in a zone, remove them from said zone
+////    if (currentZone) {
+////        ZoneID zoneID = currentZone->getZoneID();
+////        currentZone->removePlayer(player);
+////
+////        // Create player unload message for end clients
+////        rControlMsg msg{};
+////        msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
+////        msg.playerID = playerID;
+////        msg.zoneID = zoneID;
+////
+////        // Tell remaining players in zone to remove the player locally
+////        for (const auto &playerInZone: currentZone->playersInZone) {
+////            // Skip the leaving player in case they are encountered
+////            if (playerInZone.first == playerID) {
+////                continue;
+////            }
+////
+////            // Send the message to the endpoint player in the zone
+////            Bedrock::ClientID playerEndpoint = playerInZone.second->getClientID();
+////            Bedrock::sendToClient(msg, playerEndpoint);
+////        }
+////    }
+//
+//    // Remove the player from the player-clientID maps
+//    playerByClientID.erase(player->getClientID());
+//    playerByPlayerID.erase(playerID);
+//
+//    //TODO: Maybe force close connection if you can? For cases where the server wants to force disconnect client
+//
+//    // Fire player leave world event
+//    onWorldPlayerLeave.invoke(player->getPlayerID());
+//
+//    // Free player memory allocation
+//    delete player;
+//
+//}
 
-        // Try to get te zone the player is currently loaded into:
-        rZone *currentZone = player->getCurrentZone();
+void rWorld::removePlayerFromWorld(rPlayer *player) {
+    // Remove the player from the player-clientID maps
+    playerByClientID.erase(player->getClientID());
+    playerByPlayerID.erase(player->getPlayerID());
 
-        // If the player is indeed in a zone, remove them from said zone
-        if (currentZone) {
-            ZoneID zoneID = currentZone->getZoneID();
-            currentZone->removePlayer(player);
-
-            // Create player unload message for end clients
-            rControlMsg msg{};
-            msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
-            msg.playerID = playerID;
-            msg.zoneID = zoneID;
-
-            // Tell remaining players in zone to remove the player locally
-            for (const auto &playerInZone: currentZone->playersInZone) {
-                // Skip the leaving player in case they are encountered
-                if (playerInZone.first == playerID) {
-                    continue;
-                }
-
-                // Send the message to the endpoint player in the zone
-                Bedrock::ClientID playerEndpoint = playerInZone.second->getClientID();
-                Bedrock::sendToClient(msg, playerEndpoint);
-            }
-        }
-
-        // Remove the player from the player-clientID maps
-        playerByClientID.erase(player->getClientID());
-        playerByPlayerID.erase(playerID);
-
-        //TODO: Maybe force close connection if you can? For cases where the server wants to force disconnect client
-
-        // Fire player leave world event
-        onWorldPlayerLeave.invoke(player->getPlayerID());
-
-        // Free player memory allocation
-        delete player;
-    }
+    // Free player memory allocation
+    delete player;
 }
 
 rStatusCode rWorld::loadZone(rZone* zone) {
@@ -119,6 +132,7 @@ void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
     // Populate player info
     newPlayer->setClientID(clientID);
     newPlayer->setPlayerID(newPlayerID);
+    newPlayer->setCurrentWorld(this);
 
     // Send the player their ID
     rControlMsg msg{};
@@ -135,7 +149,28 @@ void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
 }
 
 void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
-    removePlayer(clientID);
+    // Check to see if the player exists (by connection)
+    auto it = playerByClientID.find(clientID);
+    if (it == playerByClientID.end()){
+        rDebug::err("Player by client ID %d does not exist!", clientID);
+        return;
+    }
+
+    // Assign found value to a variable
+    rPlayer *player = it->second;
+    PlayerID playerID = player->getPlayerID();
+
+    // Remove player from world maps and from any zone they are in
+    removePlayerFromWorld(player);
+
+    // Tell all remaining players to remove the disconnected player locally
+    rControlMsg msg;
+    msg.msgType = rMessageType::REMOVE_PLAYER_FROM_WORLD;
+    msg.playerID = playerID;
+
+    for(const auto& pair : playerByClientID){
+        Bedrock::sendToClient(msg, pair.first);
+    }
 }
 
 void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -143,24 +178,50 @@ void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &o
     PlayerID playerID = inMsg.playerID;
     rPlayer* player = playerByPlayerID[playerID];
 
-
+    // Tell the joining player to allocate memory for all other players in the world
     for(const auto& pair : playerByPlayerID){
         if(pair.second == player){
             rDebug::log("Skipping new player thing :)");
             continue;
         }
 
-
+        player->allocatePlayer(pair.second);
     }
 }
 
-void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+void rWorld::ssAllocatePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement
     PlayerID playerID = inMsg.playerID;
     rPlayer *player = playerByPlayerID[playerID];
 
     //Confirm that the player info has been created on the client's end
-    player->confirmPlayerLoaded(inMsg.allocatedPlayer);
+    player->confirmPlayerAllocation(inMsg.allocatedPlayer);
+}
+
+void rWorld::ssRemovePlayerFromWorldAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    PlayerID removedPlayerID = inMsg.removedPlayer;
+
+    // Remove the acknowledging player from the waiting buffer
+    awaitingPlayerDeallocation[removedPlayerID].erase(inMsg.playerID);
+
+    // Once every other player has confirmed that they removed the disconnected player locally,
+    // send the remaining players confirmation that the removal was complete. The disconnected
+    // player fully left the world.
+    if(awaitingPlayerDeallocation[removedPlayerID].empty()){
+        rControlMsg msg;
+        msg.msgType = rMessageType::WORLD_LEAVE_COMPLETE;
+        inMsg.playerID = inMsg.removedPlayer;
+
+        for(const auto& pair : playerByClientID){
+            Bedrock::sendToClient(msg, pair.first);
+        }
+
+        // Remove the removed player's key from the waiting buffer
+        awaitingPlayerDeallocation.erase(removedPlayerID);
+
+        // Free the removed player's ID
+        freePlayerID(removedPlayerID);
+    }
 }
 
 void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -227,7 +288,7 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
         // IMPORTANT: mark that the player has loaded in all other players (since there are none in the zone).
         // Otherwise, the server will make this player load in all entities in the zone again
         // when another player loads into the zone.
-        player->setFlagLoadedInOtherPlayers(true);
+        // TODO player->setFlagLoadedInOtherPlayers(true);
 
         // Now make the player load all entities that are currently in the zone
         player->loadEntitiesInCurrentZone();
@@ -244,10 +305,10 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
             }
 
             // Tell the end client in the zone to allocate info for the new player
-            pair.second->loadPlayer(player);
+            // TODO pair.second->loadPlayer(player);
 
             // Make the new player allocate information for the end client
-            player->loadPlayer(pair.second);
+            // TODO player->loadPlayer(pair.second);
         }
     }
 }
@@ -290,8 +351,14 @@ void rWorld::ssHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         case rMessageType::CREATE_ENTITY_ACKNOWLEDGE:
             ssLoadEntityAcknowledge(inMsg, outMsg);
             break;
-        case rMessageType::ALLOCATE_INCOMING_PLAYER_ACK:
-            ssAllocatePlayerInstanceAcknowledge(inMsg, outMsg);
+        case rMessageType::ALLOCATE_PLAYER_ACK:
+            ssAllocatePlayerAcknowledge(inMsg, outMsg);
+            break;
+        case rMessageType::ASSIGN_PLAYER_ID_ACKNOWLEDGE:
+            ssAssignPlayerIDAcknowledge(inMsg, outMsg);
+            break;
+        case rMessageType::REMOVE_PLAYER_FROM_WORLD_ACKNOWLEDGE:
+            ssRemovePlayerFromWorldAcknowledge(inMsg, outMsg);
             break;
         default:
             break;
@@ -310,30 +377,69 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Send ID assignment acknowledgement to the server
     inMsg.msgType = rMessageType::ASSIGN_PLAYER_ID_ACKNOWLEDGE;
     Bedrock::serializeType(inMsg, outMsg);
-
-    // Fire the join world event for this local client only.
-    // TODO move onWorldJoin.invoke();
-
-    // Fire the player join world event (client side)
-    // TODO move this onWorldPlayerJoin.invoke(playerID);
 }
 
-void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+void rWorld::csAllocatePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player ID for the player that needs a player object instance to be allocated
     PlayerID playerID = inMsg.playerID;
 
     // Create a new player object instance
     auto player = new rPlayer;
     player->setPlayerID(playerID);
+    player->setCurrentWorld(this);
+
+    // Store this player
+    playerByPlayerID[playerID] = player;
 
     //Add the new player info to the zone's list players
-    localPlayer->getCurrentZone()->addPlayer(player);
+    // TODO move localPlayer->getCurrentZone()->addPlayer(player);
 
     //Send a player object allocation acknowledgement back to the server
-    inMsg.msgType = rMessageType::ALLOCATE_INCOMING_PLAYER_ACK;
+    inMsg.msgType = rMessageType::ALLOCATE_PLAYER_ACK;
     inMsg.playerID = localPlayer->getPlayerID();
     inMsg.allocatedPlayer = player->getPlayerID();
     Bedrock::serializeType(inMsg, outMsg);
+}
+
+void rWorld::csWorldJoinComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    PlayerID playerID = inMsg.playerID; // Player ID that of player that joined the world
+
+    if(localPlayer->getPlayerID() == playerID){
+        // Fire the join world event for this local client only.
+        onWorldJoin.invoke();
+    } else{
+        // Locally allocate the new player that has joined the world
+        // The new player has already allocated all other players, but every other player is
+        // just finding out about the new player right here
+        auto player = new rPlayer;
+        player->setPlayerID(playerID);
+        player->setCurrentWorld(this);
+
+        // Store the new player
+        playerByPlayerID[playerID] = player;
+    }
+
+    // Fire the player join world event with the new player (should be fired for all clients)
+    onWorldPlayerJoin.invoke(playerID);
+}
+
+void rWorld::csRemovePlayerFromWorld(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    PlayerID playerID = inMsg.playerID;
+    rPlayer* player = playerByPlayerID[playerID];
+
+    // Remove the player
+    removePlayerFromWorld(player);
+
+    // Send player removal ack to the server
+    inMsg.msgType = rMessageType::REMOVE_PLAYER_FROM_WORLD_ACKNOWLEDGE;
+    inMsg.playerID = localPlayer->getPlayerID();
+    inMsg.removedPlayer = playerID;
+    Bedrock::serializeType(inMsg, outMsg);
+}
+
+void rWorld::csWorldLeaveComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    // Fire the player left world event
+    onWorldPlayerLeave.invoke(inMsg.playerID);
 }
 
 void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -424,8 +530,17 @@ void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         case rMessageType::CREATE_ENTITY_REQUEST:
             csLoadEntityRequest(inMsg, outMsg);
             break;
-        case rMessageType::ALLOCATE_INCOMING_PLAYER:
-            csAllocatePlayerInstance(inMsg, outMsg);
+        case rMessageType::ALLOCATE_PLAYER:
+            csAllocatePlayer(inMsg, outMsg);
+            break;
+        case rMessageType::WORLD_JOIN_COMPLETE:
+            csWorldJoinComplete(inMsg, outMsg);
+            break;
+        case rMessageType::REMOVE_PLAYER_FROM_WORLD:
+            csRemovePlayerFromWorld(inMsg, outMsg);
+            break;
+        case rMessageType::WORLD_LEAVE_COMPLETE:
+            csWorldLeaveComplete(inMsg, outMsg);
             break;
         default:
             break;
@@ -477,6 +592,7 @@ void rWorld::joinWorld(const char *world, Port port) {
 
     //Create local player info object to store info in
     localPlayer = new rPlayer;
+    localPlayer->setCurrentWorld(this);
 
     //Connect to world
     Bedrock::init();
@@ -507,6 +623,12 @@ void rWorld::leaveWorld() {
 
         Bedrock::sendToHost(msg);
     }
+
+    // Deallocate all stored players
+    for(auto& pair : playerByPlayerID){
+        delete pair.second;
+    }
+    playerByPlayerID.clear();
 
     delete localPlayer;
     Bedrock::shutdown();

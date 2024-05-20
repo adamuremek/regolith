@@ -22,8 +22,9 @@ public:
     void loadEntity(rEntity* entity);
     void confirmEntityLoaded(EntityInstanceID entityInstanceID);
 
+    // Called server side only
     void allocatePlayer(rPlayer* player);
-    void confirmPlayerAllocation(PlayerID playerID);
+    void confirmPlayerAllocation(PlayerID allocatedPlayerID);
 
 
     void clearZoneInfo();

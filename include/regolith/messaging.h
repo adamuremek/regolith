@@ -25,6 +25,7 @@ BedrockMsgDatatype(rControlMsg){
     rMessageType msgType{rMessageType::NONE};
     PlayerID playerID{0};
     PlayerID allocatedPlayer{0};
+    PlayerID removedPlayer{0};
     ZoneID zoneID{0};
     rEntityInfo entityInfo;
 

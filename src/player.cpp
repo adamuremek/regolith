@@ -63,9 +63,9 @@ void rPlayer::allocatePlayer(rPlayer *player) {
     Bedrock::sendToClient(msg, clientID);
 }
 
-void rPlayer::confirmPlayerAllocation(PlayerID playerID) {
+void rPlayer::confirmPlayerAllocation(PlayerID allocatedPlayerID) {
     // Remove the player from the ACK buffer
-    awaitingPlayerAllocation.erase(playerID);
+    awaitingPlayerAllocation.erase(allocatedPlayerID);
 
     // Once the ACK buffer is empty and the player has made player info allocations for all other
     // players in the zone, start loading in all the entities in the zone.
@@ -76,10 +76,11 @@ void rPlayer::confirmPlayerAllocation(PlayerID playerID) {
         // Tell every other player in the server that "this" player has joined the world (including themselves)
         rControlMsg msg;
         msg.msgType = rMessageType::WORLD_JOIN_COMPLETE;
-        msg.playerID = playerID;
+        msg.playerID = allocatedPlayerID;
 
-        for(const auto& pair : )
-
+        for(const auto& pair : p_currentWorld->playerByPlayerID){
+            Bedrock::sendToClient(msg, pair.second->getClientID());
+        }
 
 
         // Load all entities in the zone

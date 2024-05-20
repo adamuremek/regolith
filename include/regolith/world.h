@@ -3,15 +3,11 @@
 
 class rWorld{
 private:
-    // Server side variables
-    std::unordered_map<int, rPlayer*> playerByClientID;
-    std::unordered_map<PlayerID, rPlayer*> playerByPlayerID;
-
-    // Client side variables
-    rPlayer* localPlayer{nullptr};
+    std::unordered_map<PlayerID, std::unordered_set<PlayerID>> awaitingPlayerDeallocation;
 
     /*========================== SHARED CALLBACKS =========================*/
-    void removePlayer(const Bedrock::ClientID& clientID);
+//    void removePlayer(const Bedrock::ClientID& clientID);
+    void removePlayerFromWorld(rPlayer* player);
     rStatusCode loadZone(rZone* zone);
     rStatusCode unloadZone(rZone* zone);
 
@@ -19,7 +15,8 @@ private:
     void playerConnected(const Bedrock::ClientID& clientID);
     void playerDisconnected(const Bedrock::ClientID& clientID);
     void ssAssignPlayerIDAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
-    void ssAllocatePlayerInstanceAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssAllocatePlayerAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssRemovePlayerFromWorldAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadZoneAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
@@ -29,7 +26,10 @@ private:
 
     /*======================= CLIENT SIDE CALLBACKS =======================*/
     void csAssignPlayerID(rControlMsg& inMsg, Bedrock::Message& outMsg);
-    void csAllocatePlayerInstance(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csAllocatePlayer(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csWorldJoinComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csRemovePlayerFromWorld(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csWorldLeaveComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadZoneComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
@@ -37,6 +37,13 @@ private:
     void csHandleControlMsg(rControlMsg& inMsg, Bedrock::Message& outMsg);
 
 public:
+    // Server side variables
+    std::unordered_map<int, rPlayer*> playerByClientID;
+    std::unordered_map<PlayerID, rPlayer*> playerByPlayerID;
+
+    // Client side variables
+    rPlayer* localPlayer{nullptr};
+
     // World Events
     Bedrock::Event<void> onWorldStart;
     Bedrock::Event<void> onWorldStop;
