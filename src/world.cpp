@@ -538,7 +538,8 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
     // Proceed to unload the zone if it was found from the registry, otherwise return appropriate error
     if(zone){
         rStatusCode code = unloadZone(zone);
-        rDebug::log("D %d", code);
+        rDebug::log("D");
+        rDebug::log("%d",(int)code);
         return code;
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
