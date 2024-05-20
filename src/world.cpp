@@ -162,6 +162,12 @@ void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
         targetZone->removePlayer(leavingPlayer);
         rDebug::log("Gubba");
 
+        // If there are no more players (after removing the specified one), then just uninstantiate the zone
+        if(targetZone->playersInZone.size() == 0){
+            targetZone->uninstantiateZone();
+            return;
+        }
+
         //Tell remaining players in zone to remove the player locally
         for (const auto &pair: targetZone->playersInZone) {
             //Skip the leaving player in case they are encountered
