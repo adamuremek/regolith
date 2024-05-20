@@ -74,11 +74,12 @@ rStatusCode rWorld::loadZone(rZone* zone) {
 }
 
 rStatusCode rWorld::unloadZone(rZone *zone) {
+    rDebug::log("A");
     // Make sure the zone is not null
     if(zone == nullptr){
         return rStatusCode::NULL_ZONE_PROVIDED;
     }
-
+    rDebug::log("B");
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
         // Tell the server that the current player/client is unloading the specified zone
         rControlMsg msg{};
@@ -86,15 +87,17 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
         msg.zoneID = zone->getZoneID();
         msg.playerID = localPlayer->getPlayerID();
         Bedrock::sendToHost(msg);
+        rDebug::log("C");
 
         // Uninstantiate the zone (client side)
         return zone->uninstantiateZone();
-
+        rDebug::log("D");
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
+        rDebug::log("E");
         // Uninstantiate the zone (server side)
         return zone->instantiateZone();
     }
-
+    rDebug::log("F");
     return rStatusCode::UNLOAD_ZONE_FAILED;
 }
 
@@ -490,6 +493,7 @@ rStatusCode rWorld::loadZone(const char *zoneName) {
     if(zone){
         return loadZone(zone);
     }else{
+        rDebug::err("Zone could not be found to load by requested zone name!");
         return rStatusCode::ZONE_WITH_PROVIDED_NAME_NOT_FOUND;
     }
 }
@@ -502,6 +506,7 @@ rStatusCode rWorld::loadZone(ZoneID zoneID) {
     if(zone){
         return loadZone(zone);
     }else{
+        rDebug::err("Zone could not be found to load by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
 }
@@ -514,6 +519,7 @@ rStatusCode rWorld::unloadZone(const char *zoneName) {
     if(zone){
         return unloadZone(zone);
     }else{
+        rDebug::err("Zone could not be found to unload by requested zone name!");
         return rStatusCode::ZONE_WITH_PROVIDED_NAME_NOT_FOUND;
     }
 }
@@ -526,6 +532,7 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
     if(zone){
         return unloadZone(zone);
     }else{
+        rDebug::err("Zone could not be found to unload by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
 }
