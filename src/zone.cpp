@@ -17,6 +17,7 @@ rStatusCode rZone::EngineHook_uninstantiateZone() {
 rStatusCode rZone::instantiateZone() {
     // Just in case this method is called when the zone is already instantiated
     if (instantiated) {
+        rDebug::log("instantiated already :)");
         return rStatusCode::ZONE_IS_INSTANTIATED;
     }
 
@@ -43,6 +44,7 @@ rStatusCode rZone::instantiateZone() {
 rStatusCode rZone::uninstantiateZone() {
     // Make sure zone is instantiated
     if(!instantiated){
+        rDebug::log("uninstantiated already :D");
         return rStatusCode::ZONE_IS_NOT_INSTANTIATED;
     }
 

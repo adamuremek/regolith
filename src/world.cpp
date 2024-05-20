@@ -80,12 +80,11 @@ rStatusCode rWorld::loadZone(rZone* zone) {
 }
 
 rStatusCode rWorld::unloadZone(rZone *zone) {
-    rDebug::log("A");
     // Make sure the zone is not null
     if(zone == nullptr){
         return rStatusCode::NULL_ZONE_PROVIDED;
     }
-    rDebug::log("B");
+
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
         // Tell the server that the current player/client is unloading the specified zone
         rControlMsg msg{};
@@ -93,16 +92,14 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
         msg.zoneID = zone->getZoneID();
         msg.playerID = localPlayer->getPlayerID();
         Bedrock::sendToHost(msg);
-        rDebug::log("C");
 
         // Uninstantiate the zone (client side)
         return zone->uninstantiateZone();
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
-        rDebug::log("E");
         // Uninstantiate the zone (server side)
         return zone->uninstantiateZone();
     }
-    rDebug::log("F");
+
     return rStatusCode::UNLOAD_ZONE_FAILED;
 }
 
@@ -151,7 +148,6 @@ void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Me
 }
 
 void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("AHHH PALYER UNLOADING");
     // Get the player and the zone that the player has left
     rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
     rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
@@ -160,10 +156,9 @@ void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
     if (targetZone) {
         // Remove the player from the zone
         targetZone->removePlayer(leavingPlayer);
-        rDebug::log("Gubba");
 
         // If there are no more players (after removing the specified one), then just uninstantiate the zone
-        if(targetZone->playersInZone.size() == 0){
+        if(targetZone->playersInZone.empty()){
             targetZone->uninstantiateZone();
             return;
         }
