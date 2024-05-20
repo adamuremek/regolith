@@ -32,6 +32,7 @@ public:
     [[nodiscard]] inline PlayerID getPlayerID() const { return playerID; }
     [[nodiscard]] inline Bedrock::ClientID getClientID() const { return clientID; }
     [[nodiscard]] inline rZone* getCurrentZone() const { return p_currentZone; }
+    inline bool getFlagAllocatedPlayersInWorld() const { return flagAllocatedPlayersInWorld; }
 
     inline void setPlayerID(const PlayerID& newPlayerID) { playerID = newPlayerID; }
     inline void setClientID(const Bedrock::ClientID& newClientID) { clientID = newClientID; }

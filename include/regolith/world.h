@@ -8,6 +8,7 @@ private:
     /*========================== SHARED CALLBACKS =========================*/
 //    void removePlayer(const Bedrock::ClientID& clientID);
     void removePlayerFromWorld(rPlayer* player);
+    void sendWorldPlayerJoinMessage(PlayerID playerID);
     rStatusCode loadZone(rZone* zone);
     rStatusCode unloadZone(rZone* zone);
 

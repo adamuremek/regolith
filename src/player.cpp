@@ -67,21 +67,11 @@ void rPlayer::confirmPlayerAllocation(PlayerID allocatedPlayerID) {
     // Remove the player from the ACK buffer
     awaitingPlayerAllocation.erase(allocatedPlayerID);
 
-    // Once the ACK buffer is empty and the player has made player info allocations for all other
-    // players in the zone, start loading in all the entities in the zone.
+    // Once the ACK buffer is empty and the player has made player object allocations for all other
+    // players in the world, flag that this player has loaded everyone in.
     if(awaitingPlayerAllocation.empty() && !flagAllocatedPlayersInWorld){
         // Mark that the player has loaded all other players in the zone locally
         flagAllocatedPlayersInWorld = true;
-
-        // Tell every other player in the server that "this" player has joined the world (including themselves)
-        rControlMsg msg;
-        msg.msgType = rMessageType::WORLD_JOIN_COMPLETE;
-        msg.playerID = allocatedPlayerID;
-
-        for(const auto& pair : p_currentWorld->playerByPlayerID){
-            Bedrock::sendToClient(msg, pair.second->getClientID());
-        }
-
 
         // Load all entities in the zone
         //TODO move this loadEntitiesInCurrentZone();

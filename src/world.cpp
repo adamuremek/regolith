@@ -70,6 +70,20 @@ void rWorld::removePlayerFromWorld(rPlayer *player) {
     delete player;
 }
 
+void rWorld::sendWorldPlayerJoinMessage(PlayerID playerID) {
+    // Fire the player join world event (server side)
+    onWorldPlayerJoin.invoke(playerID);
+
+    // Tell every other player in the server that "this" player has joined the world (including themselves)
+    rControlMsg msg;
+    msg.msgType = rMessageType::WORLD_JOIN_COMPLETE;
+    msg.playerID = playerID;
+
+    for(const auto& pair : playerByClientID){
+        Bedrock::sendToClient(msg, pair.first);
+    }
+}
+
 rStatusCode rWorld::loadZone(rZone* zone) {
     // Make sure the zone is not null
     if(zone == nullptr){
@@ -143,9 +157,6 @@ void rWorld::playerConnected(const Bedrock::ClientID &clientID) {
     // Add player to a map keyed by client id, and a map keyed by id
     playerByClientID[clientID] = newPlayer;
     playerByPlayerID[newPlayerID] = newPlayer;
-
-    // Fire the player join world event (server side)
-    onWorldPlayerJoin.invoke(newPlayerID);
 }
 
 void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
@@ -178,6 +189,13 @@ void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &o
     PlayerID playerID = inMsg.playerID;
     rPlayer* player = playerByPlayerID[playerID];
 
+    // Since the first player will be the only one in the zone,
+    // just send them the player join message for themselves (there are no other players to allocate).
+    if(playerByPlayerID.size() == 1){
+        sendWorldPlayerJoinMessage(playerID);
+        return;
+    }
+
     // Tell the joining player to allocate memory for all other players in the world
     for(const auto& pair : playerByPlayerID){
         if(pair.second == player){
@@ -196,6 +214,11 @@ void rWorld::ssAllocatePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &o
 
     //Confirm that the player info has been created on the client's end
     player->confirmPlayerAllocation(inMsg.allocatedPlayer);
+
+
+    if(player->getFlagAllocatedPlayersInWorld()){
+        sendWorldPlayerJoinMessage(playerID);
+    }
 }
 
 void rWorld::ssRemovePlayerFromWorldAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -402,12 +425,13 @@ void rWorld::csAllocatePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::csWorldJoinComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("TEXT MARK 1");
     PlayerID playerID = inMsg.playerID; // Player ID that of player that joined the world
 
     if(localPlayer->getPlayerID() == playerID){
         // Fire the join world event for this local client only.
         onWorldJoin.invoke();
-    } else{
+    }else{
         // Locally allocate the new player that has joined the world
         // The new player has already allocated all other players, but every other player is
         // just finding out about the new player right here
