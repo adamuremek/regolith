@@ -64,6 +64,7 @@ void rPlayer::allocatePlayer(rPlayer *player) {
 }
 
 void rPlayer::confirmPlayerAllocation(PlayerID allocatedPlayerID) {
+    rDebug::log("PLAYER ID BEING CONFIRMED: %d", allocatedPlayerID);
     // Remove the player from the ACK buffer
     awaitingPlayerAllocation.erase(allocatedPlayerID);
 

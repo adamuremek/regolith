@@ -243,15 +243,13 @@ void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &o
 }
 
 void rWorld::ssAllocatePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("F");
     // Get the player who sent the acknowledgement
     PlayerID playerID = inMsg.playerID;
     rPlayer *player = playerByPlayerID[playerID];
-    rDebug::log("G");
+
     //Confirm that the player info has been created on the client's end
     player->confirmPlayerAllocation(inMsg.allocatedPlayer);
 
-    rDebug::log("H");
     if(player->getFlagAllocatedPlayersInWorld()){
         sendWorldPlayerJoinMessage(playerID);
     }
@@ -405,7 +403,7 @@ void rWorld::ssHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         case rMessageType::CREATE_ENTITY_ACKNOWLEDGE:
             ssLoadEntityAcknowledge(inMsg, outMsg);
             break;
-        case rMessageType::ALLOCATE_PLAYER_ACK:
+        case rMessageType::ALLOCATE_PLAYER_ACKNOWLEDGE:
             ssAllocatePlayerAcknowledge(inMsg, outMsg);
             break;
         case rMessageType::ASSIGN_PLAYER_ID_ACKNOWLEDGE:
@@ -434,31 +432,28 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::csAllocatePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("A");
     // Get the player ID for the player that needs a player object instance to be allocated
     PlayerID playerID = inMsg.playerID;
-    rDebug::log("B");
+
     // Create a new player object instance
     auto player = new rPlayer;
     player->setPlayerID(playerID);
     player->setCurrentWorld(this);
-    rDebug::log("C");
+
     // Store this player
     playerByPlayerID[playerID] = player;
-    rDebug::log("D");
+
     //Add the new player info to the zone's list players
     // TODO move localPlayer->getCurrentZone()->addPlayer(player);
 
     //Send a player object allocation acknowledgement back to the server
-    inMsg.msgType = rMessageType::ALLOCATE_PLAYER_ACK;
+    inMsg.msgType = rMessageType::ALLOCATE_PLAYER_ACKNOWLEDGE;
     inMsg.playerID = localPlayer->getPlayerID();
     inMsg.allocatedPlayer = player->getPlayerID();
     Bedrock::serializeType(inMsg, outMsg);
-    rDebug::log("E");
 }
 
 void rWorld::csWorldJoinComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("TEXT MARK 1");
     PlayerID playerID = inMsg.playerID; // Player ID that of player that joined the world
 
     if(localPlayer->getPlayerID() == playerID){
