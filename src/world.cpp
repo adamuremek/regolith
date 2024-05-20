@@ -198,6 +198,14 @@ void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
     if(playerByPlayerID.empty()){
         // If there are no players left in the world, just fire the player leave event server side
         sendWorldPlayerLeaveMessage(playerID);
+
+        // Clear the deallocation wait buffer in case a bunch of people leave at the same time, causing some
+        // dirty data to be stored in the buffer
+        awaitingPlayerDeallocation.clear();
+
+        // Reclaim any leaked player IDs
+        reclaimPlayerIDs();
+
     } else{
         // Send the message to all remaining players
         rControlMsg msg;

@@ -28,6 +28,7 @@ public:
     EntityInstanceID generateEntityInstanceID();
     void freePlayerID(const PlayerID& playerID);
     void freeEntityInstanceID(const EntityInstanceID& entityInstanceId);
+    void reclaimPlayerIDs();
 };
 
 
@@ -37,5 +38,6 @@ inline void freePlayerID(const PlayerID& playerID) { IDGenerator::getInstance().
 inline void freeEntityInstanceID(const EntityInstanceID& entityInstanceID) {
     IDGenerator::getInstance().freeEntityInstanceID(entityInstanceID);
 }
+inline void reclaimPlayerIDs() { IDGenerator::getInstance().reclaimPlayerIDs(); }
 
 #endif //REGOLITH_ID_GENERATOR_H

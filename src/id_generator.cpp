@@ -49,3 +49,16 @@ void IDGenerator::freeEntityInstanceID(const EntityInstanceID &entityInstanceId)
     usedNetworkEntityIDs.erase(entityInstanceId);
     freeNetworkEntityIDs.push(entityInstanceId);
 }
+
+void IDGenerator::reclaimPlayerIDs() {
+    // Clear stack with free player IDs
+    while(!freePlayerIDs.empty()){
+         freePlayerIDs.pop();
+    }
+
+    // Clear stack with used player IDs
+    usedPlayerIDs.clear();
+
+    // Reset player ID counter
+    s_playerIDCounter = 1;
+}
