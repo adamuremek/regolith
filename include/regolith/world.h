@@ -10,8 +10,10 @@ private:
     // Client side variables
     rPlayer* localPlayer{nullptr};
 
-    /*======================= SHARED CALLBACKS =======================*/
+    /*========================== SHARED CALLBACKS =========================*/
     void removePlayer(const Bedrock::ClientID& clientID);
+    rStatusCode loadZone(rZone* zone);
+    rStatusCode unloadZone(rZone* zone);
 
     /*======================= SERVER SIDE CALLBACKS =======================*/
     void playerConnected(const Bedrock::ClientID& clientID);
@@ -43,15 +45,17 @@ public:
     Bedrock::Event<void, PlayerID> onWorldPlayerLeave;
 
 
-    REGOLITH_API void startWorld(Port port);
-    REGOLITH_API void stopWorld();
+    void startWorld(Port port);
+    void stopWorld();
 
-    REGOLITH_API void joinWorld(const char* world, Port port);
-    REGOLITH_API void leaveWorld();
-//
-//    bool load_zone_by_name(String zoneName);
-//    bool load_zone_by_id(ZoneID_t zoneId);
-//    void unload_zone();
+    void joinWorld(const char* world, Port port);
+    void leaveWorld();
+
+    rStatusCode loadZone(const char* zoneName);
+    rStatusCode loadZone(ZoneID zoneID);
+    rStatusCode unloadZone(const char* zoneName);
+    rStatusCode unloadZone(ZoneID zoneID);
+
 //
 //    //Both
 //    bool player_exists(PlayerID_t playerId);

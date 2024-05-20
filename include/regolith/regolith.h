@@ -27,8 +27,6 @@ class rZone;
 class rEntity;
 class rComponent;
 
-
-
 #include "debug.h"
 #include "types.h"
 #include "messaging.h"

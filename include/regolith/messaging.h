@@ -22,7 +22,7 @@ BedrockMsgDatatype(rEntityInfo){
 };
 
 BedrockMsgDatatype(rControlMsg){
-    MessageType msgType{MessageType::NONE};
+    rMessageType msgType{rMessageType::NONE};
     PlayerID playerID{0};
     PlayerID allocatedPlayer{0};
     ZoneID zoneID{0};

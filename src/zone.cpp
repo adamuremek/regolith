@@ -17,12 +17,12 @@ rStatusCode rZone::EngineHook_uninstantiateZone() {
 rStatusCode rZone::instantiateZone() {
     // Just in case this method is called when the zone is already instantiated
     if (instantiated) {
-        return rStatusCode::INSTANTIATE_ZONE_FAILED;
+        return rStatusCode::ZONE_IS_INSTANTIATED;
     }
 
     // Instantiate the zone game object in the game engine
     if(EngineHook_instantiateZoneStart() != rStatusCode::SUCCESS){
-        return rStatusCode::INSTANTIATE_ZONE_FAILED;
+        return rStatusCode::INSTANTIATE_ZONE_START_FAILED;
     }
 
     // Indicate that the zone has been instantiated through the boolean flag
@@ -32,15 +32,20 @@ rStatusCode rZone::instantiateZone() {
 
     // Invoke engine specific code for when the zone has been instantiated.
     if(EngineHook_instantiateZoneFinish() != rStatusCode::SUCCESS){
-        // Gotta reset this
+        // Reset the "instantiated" boolean so that this zone doesn't appear instantiated to other objects
         instantiated = false;
-        return rStatusCode::INSTANTIATE_ZONE_FAILED;
+        return rStatusCode::INSTANTIATE_ZONE_FINISH_FAILED;
     }
 
     return rStatusCode::SUCCESS;
 }
 
 rStatusCode rZone::uninstantiateZone() {
+    // Make sure zone is instantiated
+    if(!instantiated){
+        return rStatusCode::ZONE_IS_NOT_INSTANTIATED;
+    }
+
     // Destroy all entities in the zone
     for(const auto& pair : entitiesInZone){
         destroyEntity(pair.second);
@@ -129,7 +134,7 @@ void rZone::loadEntity(rEntityInfo &entityInfo) {
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
         // Send the entity creation request
         rControlMsg req{};
-        req.msgType = MessageType::CREATE_ENTITY_REQUEST;
+        req.msgType = rMessageType::CREATE_ENTITY_REQUEST;
         req.entityInfo = entityInfo;
 
         Bedrock::sendToHost(req);

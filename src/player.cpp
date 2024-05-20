@@ -16,7 +16,7 @@ void rPlayer::loadEntitiesInCurrentZone() {
 void rPlayer::loadEntity(rEntity *entity) {
     // Create a message to request the creation of the entity on this player's end
     rControlMsg msg;
-    msg.msgType = MessageType::CREATE_ENTITY_REQUEST;
+    msg.msgType = rMessageType::CREATE_ENTITY_REQUEST;
     msg.entityInfo = entity->getEntityInfo();
 
     // Add the entity (instance ID) to the ACK waiting buffer
@@ -37,7 +37,7 @@ void rPlayer::confirmEntityLoaded(EntityInstanceID entityInstanceID) {
 
         // Inform all players in the zone that this player has fully loaded into the zone
         rControlMsg msg;
-        msg.msgType = MessageType::LOAD_ZONE_COMPLETE;
+        msg.msgType = rMessageType::LOAD_ZONE_COMPLETE;
         msg.playerID = playerID;
         msg.zoneID = p_currentZone->getZoneID();
 
@@ -53,7 +53,7 @@ void rPlayer::confirmEntityLoaded(EntityInstanceID entityInstanceID) {
 void rPlayer::loadPlayer(rPlayer *player) {
     // Create a message to tell this end client/player to allocate information for the incoming player
     rControlMsg msg;
-    msg.msgType = MessageType::ALLOCATE_INCOMING_PLAYER;
+    msg.msgType = rMessageType::ALLOCATE_INCOMING_PLAYER;
     msg.playerID = player->getPlayerID();
 
     // Add incoming player (player ID) to the ACK waiting buffer
