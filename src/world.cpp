@@ -246,6 +246,7 @@ void rWorld::ssAllocatePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &o
     // Get the player who sent the acknowledgement
     PlayerID playerID = inMsg.playerID;
     rPlayer *player = playerByPlayerID[playerID];
+    rDebug::log("PLAYERID 3: %d", inMsg.allocatedPlayer);
 
     //Confirm that the player info has been created on the client's end
     player->confirmPlayerAllocation(inMsg.allocatedPlayer);
@@ -448,6 +449,7 @@ void rWorld::csAllocatePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
     //Send a player object allocation acknowledgement back to the server
     inMsg.msgType = rMessageType::ALLOCATE_PLAYER_ACKNOWLEDGE;
+    rDebug::log("PLAYERID 2: %d", player->getPlayerID());
     inMsg.playerID = localPlayer->getPlayerID();
     inMsg.allocatedPlayer = player->getPlayerID();
     Bedrock::serializeType(inMsg, outMsg);

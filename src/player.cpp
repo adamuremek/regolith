@@ -55,6 +55,7 @@ void rPlayer::allocatePlayer(rPlayer *player) {
     rControlMsg msg;
     msg.msgType = rMessageType::ALLOCATE_PLAYER;
     msg.playerID = player->getPlayerID();
+    rDebug::log("PLAYERID 1: %d", player->getPlayerID());
 
     // Add incoming player (player ID) to the ACK waiting buffer
     awaitingPlayerAllocation.insert(player->getPlayerID());
