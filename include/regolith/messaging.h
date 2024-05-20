@@ -33,6 +33,8 @@ BedrockMsgDatatype(rControlMsg){
     rControlMsg(){
         registerMember(&msgType);
         registerMember(&playerID);
+        registerMember(&allocatedPlayer);
+        registerMember(&removedPlayer);
         registerMember(&zoneID);
         registerBedrockMsgDatatypeMember(&entityInfo);
     }
