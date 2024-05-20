@@ -84,6 +84,20 @@ void rWorld::sendWorldPlayerJoinMessage(PlayerID playerID) {
     }
 }
 
+void rWorld::sendWorldPlayerLeaveMessage(PlayerID playerID) {
+    // Fire player leave event (server side)
+    onWorldPlayerLeave.invoke(playerID);
+
+    // Tell every other player in the world that "this" player has left the world
+    rControlMsg msg;
+    msg.msgType = rMessageType::WORLD_LEAVE_COMPLETE;
+    msg.playerID = playerID;
+
+    for(const auto& pair : playerByClientID){
+        Bedrock::sendToClient(msg, pair.first);
+    }
+}
+
 rStatusCode rWorld::loadZone(rZone* zone) {
     // Make sure the zone is not null
     if(zone == nullptr){
@@ -167,21 +181,34 @@ void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
         return;
     }
 
-    // Assign found value to a variable
+    // Store player stuff in this scope
     rPlayer *player = it->second;
     PlayerID playerID = player->getPlayerID();
 
     // Remove player from world maps and from any zone they are in
     removePlayerFromWorld(player);
 
-    // Tell all remaining players to remove the disconnected player locally
-    rControlMsg msg;
-    msg.msgType = rMessageType::REMOVE_PLAYER_FROM_WORLD;
-    msg.playerID = playerID;
-
-    for(const auto& pair : playerByClientID){
-        Bedrock::sendToClient(msg, pair.first);
+    // Add remaining players to the deallocation waiting buffer.
+    // The buffer is used to confirm what players removed the disconnected player locally.
+    for(const auto& pair : playerByPlayerID){
+        awaitingPlayerDeallocation[playerID].insert(pair.first);
     }
+
+    // Tell all remaining players to remove the disconnected player locally
+    if(playerByPlayerID.empty()){
+        // If there are no players left in the world, just fire the player leave event server side
+        sendWorldPlayerLeaveMessage(playerID);
+    } else{
+        // Send the message to all remaining players
+        rControlMsg msg;
+        msg.msgType = rMessageType::REMOVE_PLAYER_FROM_WORLD;
+        msg.playerID = playerID;
+
+        for(const auto& pair : playerByClientID){
+            Bedrock::sendToClient(msg, pair.first);
+        }
+    }
+
 }
 
 void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -231,13 +258,8 @@ void rWorld::ssRemovePlayerFromWorldAcknowledge(rControlMsg &inMsg, Bedrock::Mes
     // send the remaining players confirmation that the removal was complete. The disconnected
     // player fully left the world.
     if(awaitingPlayerDeallocation[removedPlayerID].empty()){
-        rControlMsg msg;
-        msg.msgType = rMessageType::WORLD_LEAVE_COMPLETE;
-        inMsg.playerID = inMsg.removedPlayer;
-
-        for(const auto& pair : playerByClientID){
-            Bedrock::sendToClient(msg, pair.first);
-        }
+        // Fire the player leave event and tell other players that the specified player has successfuly left.
+        sendWorldPlayerLeaveMessage(removedPlayerID);
 
         // Remove the removed player's key from the waiting buffer
         awaitingPlayerDeallocation.erase(removedPlayerID);

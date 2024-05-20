@@ -9,6 +9,7 @@ private:
 //    void removePlayer(const Bedrock::ClientID& clientID);
     void removePlayerFromWorld(rPlayer* player);
     void sendWorldPlayerJoinMessage(PlayerID playerID);
+    void sendWorldPlayerLeaveMessage(PlayerID playerID);
     rStatusCode loadZone(rZone* zone);
     rStatusCode unloadZone(rZone* zone);
 
