@@ -626,39 +626,41 @@ void rWorld::joinWorld(const char *world, Port port) {
 }
 
 void rWorld::leaveWorld() {
+
     if (!Bedrock::isInitialized || !Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)) {
         return;
     }
 
-    //Check for a zone to unload, and unload it if there is one
-    rZone *loadedZone = localPlayer->getCurrentZone();
-    if(loadedZone){
-        //Remove the player from the zone locally
-        loadedZone->removePlayer(localPlayer);
+//    //Check for a zone to unload, and unload it if there is one
+//    rZone *loadedZone = localPlayer->getCurrentZone();
+//    if(loadedZone){
+//        //Remove the player from the zone locally
+//        loadedZone->removePlayer(localPlayer);
+//
+//        //Destroy the zone locally (for now)
+//        loadedZone->uninstantiateZone();
+//
+//        //Inform host
+//        rControlMsg msg{};
+//        msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
+//        msg.playerID = localPlayer->getPlayerID();
+//        msg.zoneID = localPlayer->getCurrentZone()->getZoneID();
+//
+//        Bedrock::sendToHost(msg);
+//    }
 
-        //Destroy the zone locally (for now)
-        loadedZone->uninstantiateZone();
+    // Clear map that stores players by their client ID
+    playerByClientID.clear();
 
-        //Inform host
-        rControlMsg msg{};
-        msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
-        msg.playerID = localPlayer->getPlayerID();
-        msg.zoneID = localPlayer->getCurrentZone()->getZoneID();
-
-        Bedrock::sendToHost(msg);
-    }
-
-    // Deallocate all stored players
+    // Deallocate all stored players (THIS INCLUDES THE LOCAL PLAYER!! don't double delete :p)
     for(auto& pair : playerByPlayerID){
         delete pair.second;
     }
     playerByPlayerID.clear();
 
-    delete localPlayer;
     Bedrock::shutdown();
     Bedrock::clearEventCallbacks();
     Bedrock::clearMsgCallbacks();
-
     onWorldLeave.invoke();
 }
 
