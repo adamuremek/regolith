@@ -41,29 +41,28 @@ rStatusCode rZone::instantiateZone() {
 }
 
 rStatusCode rZone::uninstantiateZone() {
-    rDebug::log("1");
     // Make sure zone is instantiated
     if(!instantiated){
         return rStatusCode::ZONE_IS_NOT_INSTANTIATED;
     }
-    rDebug::log("2");
+
     // Destroy all entities in the zone
     for(const auto& pair : entitiesInZone){
         destroyEntity(pair.second);
     }
-    rDebug::log("3");
+
     // Clear all players from the zone
     // note for later: prob want to cache then clear so it can be restored
     playersInZone.clear();
-    rDebug::log("4");
+
     // Invoke engine specific code to clean up the zone game object
     if(EngineHook_uninstantiateZone() != rStatusCode::SUCCESS){
         return rStatusCode::UNINSTANTIATE_ZONE_FAILED;
     }
-    rDebug::log("5");
+
     // Mark that the zone is no longer instantiated
     instantiated = false;
-    rDebug::log("6");
+
     return rStatusCode::SUCCESS;
 }
 

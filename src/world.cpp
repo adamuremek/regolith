@@ -89,7 +89,7 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
         // Tell the server that the current player/client is unloading the specified zone
         rControlMsg msg{};
-        msg.msgType = rMessageType::LOAD_ZONE_REQUEST;
+        msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
         msg.zoneID = zone->getZoneID();
         msg.playerID = localPlayer->getPlayerID();
         Bedrock::sendToHost(msg);
