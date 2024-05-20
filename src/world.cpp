@@ -321,6 +321,9 @@ void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
     rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
     rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
 
+    rDebug::log("Is zone null? %p", targetZone);
+    rDebug::log("Is player null? %p", leavingPlayer);
+
     // Remove the player from the zone
     targetZone->removePlayer(leavingPlayer);
 }
