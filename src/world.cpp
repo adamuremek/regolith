@@ -151,6 +151,7 @@ void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Me
 }
 
 void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("AHHH PALYER UNLOADING");
     // Get the player and the zone that the player has left
     rZone *targetZone = rZoneRegistry::getInstance().getZoneByID(inMsg.zoneID);
     rPlayer *leavingPlayer = playerByPlayerID[inMsg.playerID];
@@ -159,6 +160,7 @@ void rWorld::ssPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
     if (targetZone) {
         // Remove the player from the zone
         targetZone->removePlayer(leavingPlayer);
+        rDebug::log("Gubba");
 
         //Tell remaining players in zone to remove the player locally
         for (const auto &pair: targetZone->playersInZone) {
@@ -535,8 +537,9 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
 
     // Proceed to unload the zone if it was found from the registry, otherwise return appropriate error
     if(zone){
-        return unloadZone(zone);
-        rDebug::log("D");
+        rStatusCode code = unloadZone(zone);
+        rDebug::log("D %d", code);
+        return code;
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
