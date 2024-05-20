@@ -50,31 +50,40 @@ void rPlayer::confirmEntityLoaded(EntityInstanceID entityInstanceID) {
     }
 }
 
-void rPlayer::loadPlayer(rPlayer *player) {
+void rPlayer::allocatePlayer(rPlayer *player) {
     // Create a message to tell this end client/player to allocate information for the incoming player
     rControlMsg msg;
-    msg.msgType = rMessageType::ALLOCATE_INCOMING_PLAYER;
+    msg.msgType = rMessageType::ALLOCATE_PLAYER;
     msg.playerID = player->getPlayerID();
 
     // Add incoming player (player ID) to the ACK waiting buffer
-    playersWaitingForLoadAck.insert(player->getPlayerID());
+    awaitingPlayerAllocation.insert(player->getPlayerID());
 
     // Send message to the end client
     Bedrock::sendToClient(msg, clientID);
 }
 
-void rPlayer::confirmPlayerLoaded(PlayerID loadedPlayerID) {
+void rPlayer::confirmPlayerAllocation(PlayerID playerID) {
     // Remove the player from the ACK buffer
-    playersWaitingForLoadAck.erase(loadedPlayerID);
+    awaitingPlayerAllocation.erase(playerID);
 
     // Once the ACK buffer is empty and the player has made player info allocations for all other
     // players in the zone, start loading in all the entities in the zone.
-    if(playersWaitingForLoadAck.empty() && !flagLoadedInOtherPlayers){
+    if(awaitingPlayerAllocation.empty() && !flagAllocatedPlayersInWorld){
         // Mark that the player has loaded all other players in the zone locally
-        flagLoadedInOtherPlayers = true;
+        flagAllocatedPlayersInWorld = true;
+
+        // Tell every other player in the server that "this" player has joined the world (including themselves)
+        rControlMsg msg;
+        msg.msgType = rMessageType::WORLD_JOIN_COMPLETE;
+        msg.playerID = playerID;
+
+        for(const auto& pair : )
+
+
 
         // Load all entities in the zone
-        loadEntitiesInCurrentZone();
+        //TODO move this loadEntitiesInCurrentZone();
     }
 }
 

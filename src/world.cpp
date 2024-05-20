@@ -138,6 +138,22 @@ void rWorld::playerDisconnected(const Bedrock::ClientID &clientID) {
     removePlayer(clientID);
 }
 
+void rWorld::ssAssignPlayerIDAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    // Get the player who sent the acknowledgement
+    PlayerID playerID = inMsg.playerID;
+    rPlayer* player = playerByPlayerID[playerID];
+
+
+    for(const auto& pair : playerByPlayerID){
+        if(pair.second == player){
+            rDebug::log("Skipping new player thing :)");
+            continue;
+        }
+
+
+    }
+}
+
 void rWorld::ssAllocatePlayerInstanceAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement
     PlayerID playerID = inMsg.playerID;
@@ -288,14 +304,18 @@ void rWorld::csAssignPlayerID(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     PlayerID playerID = inMsg.playerID;
     localPlayer->setPlayerID(playerID);
 
-    //Locally add the local player to the world's list of players in the world (by ID only)
+    // Locally add the local player to the world's list of players in the world (by ID only)
     playerByPlayerID[playerID] = localPlayer;
 
+    // Send ID assignment acknowledgement to the server
+    inMsg.msgType = rMessageType::ASSIGN_PLAYER_ID_ACKNOWLEDGE;
+    Bedrock::serializeType(inMsg, outMsg);
+
     // Fire the join world event for this local client only.
-    onWorldJoin.invoke();
+    // TODO move onWorldJoin.invoke();
 
     // Fire the player join world event (client side)
-    onWorldPlayerJoin.invoke(playerID);
+    // TODO move this onWorldPlayerJoin.invoke(playerID);
 }
 
 void rWorld::csAllocatePlayerInstance(rControlMsg &inMsg, Bedrock::Message &outMsg) {

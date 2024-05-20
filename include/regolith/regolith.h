@@ -23,6 +23,7 @@
 #include <stack>
 #include <functional>
 
+class rWorld;
 class rZone;
 class rEntity;
 class rComponent;

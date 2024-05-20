@@ -5,12 +5,13 @@ class rPlayer{
 private:
     PlayerID playerID{0};
     Bedrock::ClientID clientID{0};
+    rWorld* p_currentWorld{nullptr};
     rZone* p_currentZone{nullptr};
-    bool flagLoadedInOtherPlayers{false};
+    bool flagAllocatedPlayersInWorld{false};
     bool flagLoadedAllEntitiesInZone{false};
 
     std::unordered_set<EntityInstanceID> entitiesWaitingForLoadAck;
-    std::unordered_set<PlayerID> playersWaitingForLoadAck;
+    std::unordered_set<PlayerID> awaitingPlayerAllocation;
 
 public:
     std::unordered_map<EntityInstanceID, rEntity*> ownedEntities;
@@ -21,8 +22,8 @@ public:
     void loadEntity(rEntity* entity);
     void confirmEntityLoaded(EntityInstanceID entityInstanceID);
 
-    void loadPlayer(rPlayer* player);
-    void confirmPlayerLoaded(PlayerID playerID);
+    void allocatePlayer(rPlayer* player);
+    void confirmPlayerAllocation(PlayerID playerID);
 
 
     void clearZoneInfo();
@@ -33,7 +34,8 @@ public:
 
     inline void setPlayerID(const PlayerID& newPlayerID) { playerID = newPlayerID; }
     inline void setClientID(const Bedrock::ClientID& newClientID) { clientID = newClientID; }
-    inline void setCurrentZone(rZone* currentZone) {p_currentZone = currentZone; }
-    inline void setFlagLoadedInOtherPlayers(const bool& flag) { flagLoadedInOtherPlayers = flag; }
+    inline void setCurrentWorld(rWorld* currentWorld) { p_currentWorld = currentWorld; }
+    inline void setCurrentZone(rZone* currentZone) { p_currentZone = currentZone; }
+    inline void setFlagAllocatedPlayersInWorld(const bool& flag) { flagAllocatedPlayersInWorld = flag; }
 };
 #endif //REGOLITH_PLAYER_INFO_H

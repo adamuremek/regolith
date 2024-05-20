@@ -18,6 +18,7 @@ private:
     /*======================= SERVER SIDE CALLBACKS =======================*/
     void playerConnected(const Bedrock::ClientID& clientID);
     void playerDisconnected(const Bedrock::ClientID& clientID);
+    void ssAssignPlayerIDAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssAllocatePlayerInstanceAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
