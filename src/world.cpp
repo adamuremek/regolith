@@ -423,6 +423,12 @@ void rWorld::ssHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
         case rMessageType::REMOVE_PLAYER_FROM_WORLD_ACKNOWLEDGE:
             ssRemovePlayerFromWorldAcknowledge(inMsg, outMsg);
             break;
+        case rMessageType::ADD_ZONE_PLAYER_ACKNOWLEDGE:
+            ssAddZonePlayerAcknowledge(inMsg, outMsg);
+            break;
+        case rMessageType::ADD_ZONE_PLAYERS_COMPLETE_ACKNOWLEDGE:
+            ssAddZonePlayersCompleteAcknowledge(inMsg, outMsg);
+            break;
         default:
             break;
     }
