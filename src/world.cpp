@@ -309,6 +309,7 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
     player->setCurrentZone(zone);
     rDebug::log("K");
     if(zone->playersInZone.empty()){
+        rDebug::log("L1");
         // If there are no players in the zone, add the loading player and
         // move on to loading entities
         zone->addPlayer(player);
@@ -318,6 +319,7 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
         msg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE;
         msg.playerID = player->getClientID();
         Bedrock::sendToClient(msg, player->getClientID());
+        rDebug::log("L3");
     }else{
         // Make player locally populate their zone's player list with the server's copy
         player->addAllZonePlayers();
@@ -327,17 +329,19 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
 }
 
 void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("P");
     // Confirm that the loading player added the previously requested player to their local zone
     rPlayer* loadingPlayer = playerByPlayerID[inMsg.playerID];
     loadingPlayer->confirmZonePlayerAdd(inMsg.zonePlayerAdded);
-
+    rDebug::log("Q");
     // Once the loading player adds all other players to the zone's player list, add the loading player
     // as well and tell them to do the same locally
     if(loadingPlayer->getFlagAddedZonePlayers()){
+        rDebug::log("R");
         // Add loading player to zone player list
         rZone* targetZone = loadingPlayer->getCurrentZone();
         targetZone->addPlayer(loadingPlayer);
-
+        rDebug::log("S");
         // Tell player to add themselves to their zone's player list.
         rControlMsg msg{};
         msg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE;
@@ -347,13 +351,15 @@ void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &ou
 }
 
 void rWorld::ssAddZonePlayersCompleteAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("T");
     // Now start loading entities that are in the zone for this player
     rPlayer* player = playerByPlayerID[inMsg.playerID];
     rZone* targetZone = player->getCurrentZone();
-
+    rDebug::log("U");
     if(targetZone->entitiesInZone.empty()){
         // If there are no entities to load, skip to completing the player load
         targetZone->sendZonePlayerLoadMessage(player->getPlayerID());
+        rDebug::log("V");
     }else{
         player->loadEntitiesInCurrentZone();
     }
