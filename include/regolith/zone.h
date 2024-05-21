@@ -15,8 +15,7 @@ public:
     std::unordered_map<EntityInstanceID, rEntity*> entitiesInZone;
 
     // Zone events
-    Bedrock::Event<void> onLoadedZone;
-    Bedrock::Event<void, PlayerID> onPlayerLoadedZone;
+    Bedrock::Event<void, PlayerID> onZonePlayerLoad;
 
     rStatusCode instantiateZone();
     rStatusCode uninstantiateZone();
@@ -30,6 +29,8 @@ public:
     REGOLITH_API virtual rStatusCode EngineHook_instantiateZoneStart();
     REGOLITH_API virtual rStatusCode EngineHook_instantiateZoneFinish();
     REGOLITH_API virtual rStatusCode EngineHook_uninstantiateZone();
+
+    void sendZonePlayerLoadMessage(const PlayerID& playerID);
 
     void addPlayer(rPlayer* player);
     void removePlayer(rPlayer* player);

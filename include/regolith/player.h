@@ -7,11 +7,14 @@ private:
     Bedrock::ClientID clientID{0};
     rWorld* p_currentWorld{nullptr};
     rZone* p_currentZone{nullptr};
+
     bool flagAllocatedPlayersInWorld{false};
+    bool flagAddedZonePlayers{false};
     bool flagLoadedAllEntitiesInZone{false};
 
-    std::unordered_set<EntityInstanceID> entitiesWaitingForLoadAck;
     std::unordered_set<PlayerID> awaitingPlayerAllocation;
+    std::unordered_set<PlayerID> awaitingZonePlayerAdd;
+    std::unordered_set<EntityInstanceID> awaitingEntityLoad;
 
 public:
     std::unordered_map<EntityInstanceID, rEntity*> ownedEntities;
@@ -23,6 +26,10 @@ public:
     void confirmEntityLoaded(EntityInstanceID entityInstanceID);
 
     // Called server side only
+    void addAllZonePlayers();
+    void addZonePlayer(rPlayer* player);
+    void confirmZonePlayerAdd(PlayerID addedZonePlayerID);
+
     void allocatePlayer(rPlayer* player);
     void confirmPlayerAllocation(PlayerID allocatedPlayerID);
 
@@ -33,6 +40,7 @@ public:
     [[nodiscard]] inline Bedrock::ClientID getClientID() const { return clientID; }
     [[nodiscard]] inline rZone* getCurrentZone() const { return p_currentZone; }
     inline bool getFlagAllocatedPlayersInWorld() const { return flagAllocatedPlayersInWorld; }
+    inline bool getFlagAddedZonePlayers() const { return flagAddedZonePlayers; }
 
     inline void setPlayerID(const PlayerID& newPlayerID) { playerID = newPlayerID; }
     inline void setClientID(const Bedrock::ClientID& newClientID) { clientID = newClientID; }

@@ -19,11 +19,13 @@ private:
     void ssAssignPlayerIDAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssAllocatePlayerAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssRemovePlayerFromWorldAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
-    void ssPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadZoneAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssAddZonePlayerAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssAddZonePlayersCompleteAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadEntityRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssLoadEntityAcknowledge(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void ssPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void ssHandleControlMsg(rControlMsg& inMsg, Bedrock::Message& outMsg);
 
     /*======================= CLIENT SIDE CALLBACKS =======================*/
@@ -32,10 +34,12 @@ private:
     void csWorldJoinComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csRemovePlayerFromWorld(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csWorldLeaveComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
-    void csPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadZoneRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
-    void csLoadZoneComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csAddZonePlayer(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csAddZonePlayersComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csLoadEntityRequest(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csLoadZoneComplete(rControlMsg& inMsg, Bedrock::Message& outMsg);
+    void csPlayerUnloadedZone(rControlMsg& inMsg, Bedrock::Message& outMsg);
     void csHandleControlMsg(rControlMsg& inMsg, Bedrock::Message& outMsg);
 
 public:
@@ -53,6 +57,8 @@ public:
     Bedrock::Event<void, PlayerID> onWorldPlayerJoin;
     Bedrock::Event<void> onWorldLeave;
     Bedrock::Event<void, PlayerID> onWorldPlayerLeave;
+    Bedrock::Event<void> onZoneLoad;
+    Bedrock::Event<void> onZoneUnload;
 
 
     void startWorld(Port port);

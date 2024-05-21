@@ -68,6 +68,21 @@ rStatusCode rZone::uninstantiateZone() {
     return rStatusCode::SUCCESS;
 }
 
+void rZone::sendZonePlayerLoadMessage(const PlayerID &playerID) {
+    // Fire the zone's player loaded event server side
+    onZonePlayerLoad.invoke(playerID);
+
+    // Inform all players in the zone that this player has fully loaded into the zone
+    rControlMsg msg;
+    msg.msgType = rMessageType::LOAD_ZONE_COMPLETE;
+    msg.playerID = playerID;
+    msg.zoneID = zoneID;
+
+    for (const auto& pair : playersInZone) {
+        Bedrock::sendToClient(msg, pair.second->getClientID());
+    }
+}
+
 void rZone::addPlayer(rPlayer *player) {
     // Store the player info within the zone
     playersInZone[player->getPlayerID()] = player;

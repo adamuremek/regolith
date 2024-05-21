@@ -26,6 +26,7 @@ BedrockMsgDatatype(rControlMsg){
     PlayerID playerID{0};
     PlayerID allocatedPlayer{0};
     PlayerID removedPlayer{0};
+    PlayerID zonePlayerAdded{0};
     ZoneID zoneID{0};
     rEntityInfo entityInfo;
 
@@ -35,6 +36,7 @@ BedrockMsgDatatype(rControlMsg){
         registerMember(&playerID);
         registerMember(&allocatedPlayer);
         registerMember(&removedPlayer);
+        registerMember(&zonePlayerAdded);
         registerMember(&zoneID);
         registerBedrockMsgDatatypeMember(&entityInfo);
     }
