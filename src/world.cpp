@@ -127,7 +127,15 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
         Bedrock::sendToHost(msg);
 
         // Uninstantiate the zone (client side)
-        return zone->uninstantiateZone();
+        rStatusCode code = zone->uninstantiateZone();
+
+        if(code == rStatusCode::SUCCESS){
+            // Reset the player's current zone
+            localPlayer->setCurrentZone(nullptr);
+            onZoneUnload.invoke();
+        }
+
+        return code;
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         // Uninstantiate the zone (server side)
         return zone->uninstantiateZone();
@@ -771,9 +779,6 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
         rStatusCode code = unloadZone(zone);
         rDebug::log("D");
         rDebug::log("%d",(int)code);
-        if(code == rStatusCode::SUCCESS){
-            onZoneUnload.invoke();
-        }
         return code;
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
