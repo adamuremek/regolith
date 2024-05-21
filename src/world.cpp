@@ -345,7 +345,6 @@ void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &ou
         // Tell player to add themselves to their zone's player list.
         rControlMsg msg{};
         msg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE;
-        msg.playerID = loadingPlayer->getClientID();
         Bedrock::sendToClient(msg, loadingPlayer->getClientID());
     }
 }
@@ -576,6 +575,7 @@ void rWorld::csAddZonePlayersComplete(rControlMsg &inMsg, Bedrock::Message &outM
 
     // Send acknowledgment to server
     inMsg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE_ACKNOWLEDGE;
+    inMsg.playerID = localPlayer->getPlayerID();
     Bedrock::serializeType(inMsg, outMsg);
 }
 
