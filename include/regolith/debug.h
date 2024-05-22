@@ -27,7 +27,7 @@ public:
     REGOLITH_API static void log(const char *format, ...) {
         va_list args;
                 va_start(args, format);
-        char buffer[57] = "[rLOG] ";
+        char buffer[107] = "[rLOG] ";
         vsnprintf(buffer + 7, sizeof(buffer) - 7, format, args);
                 va_end(args);
 
@@ -37,7 +37,7 @@ public:
     REGOLITH_API static void err(const char *format, ...) {
         va_list args;
                 va_start(args, format);
-        char buffer[57] = "[rERR] ";
+        char buffer[107] = "[rERR] ";
         vsnprintf(buffer + 7, sizeof(buffer) - 7, format, args);
                 va_end(args);
 
