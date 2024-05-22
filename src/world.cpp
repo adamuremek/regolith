@@ -761,6 +761,7 @@ rStatusCode rWorld::loadZone(const char *zoneName) {
 }
 
 rStatusCode rWorld::loadZone(ZoneID zoneID) {
+    rDebug::log("GRRRRR TELL ME WHYYYY");
     // Try to get the zone by ID
     rZone* zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
 
@@ -787,6 +788,7 @@ rStatusCode rWorld::unloadZone(const char *zoneName) {
 }
 
 rStatusCode rWorld::unloadZone(ZoneID zoneID) {
+    rDebug::log("GAHHHHH STOP");
     // Try to get the zone by ID
     rZone* zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
 
