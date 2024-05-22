@@ -624,6 +624,7 @@ void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
 }
 
 void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("HOLY SHIT PLEASE DUDE");
     switch (inMsg.msgType) {
         case rMessageType::ASSIGN_PLAYER_ID:
             csAssignPlayerID(inMsg, outMsg);
