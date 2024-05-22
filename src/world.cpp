@@ -767,13 +767,13 @@ rStatusCode rWorld::loadZone(ZoneID zoneID) {
 
     // Proceed to load the zone if it was found from the registry, otherwise return appropriate error
     if(zone){
+        rDebug::log("GRRRRR TELL ME WHYYYY == END");
         return loadZone(zone);
     }else{
         rDebug::err("Zone could not be found to load by requested zone ID!");
+        rDebug::log("GRRRRR TELL ME WHYYYY == END");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
-
-    rDebug::log("GRRRRR TELL ME WHYYYY == END");
 }
 
 rStatusCode rWorld::unloadZone(const char *zoneName) {
@@ -798,12 +798,14 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
     if(zone){
         rStatusCode code = unloadZone(zone);
         rDebug::log("AHWIDUABWDIWUAHB %d",(int)code);
+        rDebug::log("GAHHHHH STOP == END");
         return code;
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
+        rDebug::log("GAHHHHH STOP == END");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
 
-    rDebug::log("GAHHHHH STOP == END");
+
 }
 
