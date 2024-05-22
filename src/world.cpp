@@ -113,34 +113,37 @@ rStatusCode rWorld::loadZone(rZone* zone) {
 }
 
 rStatusCode rWorld::unloadZone(rZone *zone) {
+    rDebug::log("A");
     // Make sure the zone is not null
     if(zone == nullptr){
         return rStatusCode::NULL_ZONE_PROVIDED;
     }
-
+    rDebug::log("B");
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
+        rDebug::log("C");
         // Tell the server that the current player/client is unloading the specified zone
         rControlMsg msg{};
         msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
         msg.zoneID = zone->getZoneID();
         msg.playerID = localPlayer->getPlayerID();
         Bedrock::sendToHost(msg);
-
+        rDebug::log("D");
         // Uninstantiate the zone (client side)
         rStatusCode code = zone->uninstantiateZone();
-
+        rDebug::log("E");
         if(code == rStatusCode::SUCCESS){
             // Reset the player's current zone
             localPlayer->setCurrentZone(nullptr);
             onZoneUnload.invoke();
         }
-
+        rDebug::log("F");
         return code;
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
+        rDebug::log("G");
         // Uninstantiate the zone (server side)
         return zone->uninstantiateZone();
     }
-
+    rDebug::log("H");
     return rStatusCode::UNLOAD_ZONE_FAILED;
 }
 
@@ -790,8 +793,7 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
     // Proceed to unload the zone if it was found from the registry, otherwise return appropriate error
     if(zone){
         rStatusCode code = unloadZone(zone);
-        rDebug::log("D");
-        rDebug::log("%d",(int)code);
+        rDebug::log("AHWIDUABWDIWUAHB %d",(int)code);
         return code;
     }else{
         rDebug::err("Zone could not be found to unload by requested zone ID!");
