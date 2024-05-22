@@ -276,11 +276,10 @@ void rWorld::ssRemovePlayerFromWorldAcknowledge(rControlMsg &inMsg, Bedrock::Mes
 }
 
 void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("A");
     // Get the zone requested by the player
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
-    rDebug::log("B");
+
     // Make sure the requested zone exists
     if (zone) {
         // Load the zone server side
@@ -288,28 +287,23 @@ void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 
         // Tell the player to load the zone locally on their end
         Bedrock::serializeType(inMsg, outMsg);
-        rDebug::log("C1");
     } else {
         // Tell the player that the zone could not load due to an invalid ID.
         inMsg.msgType = rMessageType::LOAD_ZONE_FAILED_INVALID_ID;
         Bedrock::serializeType(inMsg, outMsg);
-        rDebug::log("C2");
     }
-    rDebug::log("D");
 }
 
 void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the player who sent the acknowledgement and the zone they loaded in (by ID)
-    rDebug::log("I");
     rPlayer *player = playerByPlayerID[inMsg.playerID];
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
-    rDebug::log("J");
+
     // Give the player a reference to what zone they are in so they can load stuff in
     player->setCurrentZone(zone);
-    rDebug::log("K");
+
     if(zone->playersInZone.empty()){
-        rDebug::log("L1");
         // If there are no players in the zone, add the loading player and
         // move on to loading entities
         zone->addPlayer(player);
@@ -319,29 +313,24 @@ void rWorld::ssLoadZoneAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg)
         msg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE;
         msg.playerID = player->getClientID();
         Bedrock::sendToClient(msg, player->getClientID());
-        rDebug::log("L3");
     }else{
         // Make player locally populate their zone's player list with the server's copy
         player->addAllZonePlayers();
-        rDebug::log("L2");
     }
-    rDebug::log("M");
 }
 
 void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("P");
     // Confirm that the loading player added the previously requested player to their local zone
     rPlayer* loadingPlayer = playerByPlayerID[inMsg.playerID];
     loadingPlayer->confirmZonePlayerAdd(inMsg.zonePlayerAdded);
-    rDebug::log("Q");
+
     // Once the loading player adds all other players to the zone's player list, add the loading player
     // as well and tell them to do the same locally
     if(loadingPlayer->getFlagAddedZonePlayers()){
-        rDebug::log("R");
         // Add loading player to zone player list
         rZone* targetZone = loadingPlayer->getCurrentZone();
         targetZone->addPlayer(loadingPlayer);
-        rDebug::log("S");
+
         // Tell player to add themselves to their zone's player list.
         rControlMsg msg{};
         msg.msgType = rMessageType::ADD_ZONE_PLAYERS_COMPLETE;
@@ -350,15 +339,13 @@ void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &ou
 }
 
 void rWorld::ssAddZonePlayersCompleteAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("T");
     // Now start loading entities that are in the zone for this player
     rPlayer* player = playerByPlayerID[inMsg.playerID];
     rZone* targetZone = player->getCurrentZone();
-    rDebug::log("U");
+
     if(targetZone->entitiesInZone.empty()){
         // If there are no entities to load, skip to completing the player load
         targetZone->sendZonePlayerLoadMessage(player->getPlayerID());
-        rDebug::log("V");
     }else{
         player->loadEntitiesInCurrentZone();
     }
@@ -531,28 +518,24 @@ void rWorld::csWorldLeaveComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) 
 
 void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
     // Get the zone id that the server wants instantiated
-    rDebug::log("E");
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
-    rDebug::log("F");
+
     // Make sure requested zone exists
     if (zone) {
-        rDebug::log("G1");
         // Try to instantiate the zone
         zone->instantiateZone();
-        rDebug::log("G2");
+
         // Give the player a reference to what zone they are in so they can load stuff in
         localPlayer->setCurrentZone(zone);
-        rDebug::log("G3");
+
         // Acknowledge that the zone has been loaded
         inMsg.msgType = rMessageType::LOAD_ZONE_ACKNOWLEDGE;
         inMsg.playerID = localPlayer->getPlayerID();
         Bedrock::serializeType(inMsg, outMsg);
-        rDebug::log("G4");
     } else {
         rDebug::err("[ERR] Could not locate the requested zone by given ID!");
     }
-    rDebug::log("H");
 }
 
 void rWorld::csAddZonePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
@@ -569,7 +552,7 @@ void rWorld::csAddZonePlayer(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::csAddZonePlayersComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("N");
+
     // Add local player to their current zone's player list
     localPlayer->getCurrentZone()->addPlayer(localPlayer);
 
@@ -600,7 +583,6 @@ void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::csLoadZoneComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("O");
     // Get the specified zone that was loaded
     rZone* targetZone = localPlayer->getCurrentZone();
 
