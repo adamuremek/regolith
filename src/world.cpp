@@ -91,18 +91,20 @@ void rWorld::sendWorldPlayerLeaveMessage(PlayerID playerID) {
 }
 
 rStatusCode rWorld::loadZone(rZone* zone) {
+    rDebug::log("1");
     // Make sure the zone is not null
     if(zone == nullptr){
         return rStatusCode::NULL_ZONE_PROVIDED;
     }
-
+    rDebug::log("2");
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
         // Send a request to load the zone to the host when acting as client
         rControlMsg msg{};
         msg.msgType = rMessageType::LOAD_ZONE_REQUEST;
         msg.zoneID = zone->getZoneID();
-
+        rDebug::log("3");
         Bedrock::sendToHost(msg);
+        rDebug::log("4");
         return rStatusCode::SUCCESS;
     } else if(Bedrock::isRole(Bedrock::Role::ACTOR_SERVER)){
         // Try to instantiate the zone (if it hasn't already been) when acting as server
@@ -279,18 +281,20 @@ void rWorld::ssRemovePlayerFromWorldAcknowledge(rControlMsg &inMsg, Bedrock::Mes
 }
 
 void rWorld::ssLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("5");
     // Get the zone requested by the player
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
-
+    rDebug::log("6");
     // Make sure the requested zone exists
     if (zone) {
         // Load the zone server side
         zone->instantiateZone();
-
+        rDebug::log("7");
         // Tell the player to load the zone locally on their end
         Bedrock::serializeType(inMsg, outMsg);
     } else {
+        rDebug::log("8");
         // Tell the player that the zone could not load due to an invalid ID.
         inMsg.msgType = rMessageType::LOAD_ZONE_FAILED_INVALID_ID;
         Bedrock::serializeType(inMsg, outMsg);
@@ -342,11 +346,13 @@ void rWorld::ssAddZonePlayerAcknowledge(rControlMsg &inMsg, Bedrock::Message &ou
 }
 
 void rWorld::ssAddZonePlayersCompleteAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("15");
     // Now start loading entities that are in the zone for this player
     rPlayer* player = playerByPlayerID[inMsg.playerID];
     rZone* targetZone = player->getCurrentZone();
 
     if(targetZone->entitiesInZone.empty()){
+        rDebug::log("16");
         // If there are no entities to load, skip to completing the player load
         targetZone->sendZonePlayerLoadMessage(player->getPlayerID());
     }else{
@@ -368,6 +374,7 @@ void rWorld::ssLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::ssLoadEntityAcknowledge(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+
     // Get the player who sent the acknowledgement
     rPlayer *player = playerByPlayerID[inMsg.playerID];
 
@@ -520,22 +527,25 @@ void rWorld::csWorldLeaveComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) 
 }
 
 void rWorld::csLoadZoneRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("9");
     // Get the zone id that the server wants instantiated
     ZoneID zoneID = inMsg.zoneID;
     rZone *zone = rZoneRegistry::getInstance().getZoneByID(zoneID);
-
+    rDebug::log("10");
     // Make sure requested zone exists
     if (zone) {
+        rDebug::log("11");
         // Try to instantiate the zone
         zone->instantiateZone();
-
+        rDebug::log("12");
         // Give the player a reference to what zone they are in so they can load stuff in
         localPlayer->setCurrentZone(zone);
-
+        rDebug::log("13");
         // Acknowledge that the zone has been loaded
         inMsg.msgType = rMessageType::LOAD_ZONE_ACKNOWLEDGE;
         inMsg.playerID = localPlayer->getPlayerID();
         Bedrock::serializeType(inMsg, outMsg);
+        rDebug::log("14");
     } else {
         rDebug::err("[ERR] Could not locate the requested zone by given ID!");
     }
@@ -586,14 +596,16 @@ void rWorld::csLoadEntityRequest(rControlMsg &inMsg, Bedrock::Message &outMsg) {
 }
 
 void rWorld::csLoadZoneComplete(rControlMsg &inMsg, Bedrock::Message &outMsg) {
+    rDebug::log("17");
     // Get the specified zone that was loaded
     rZone* targetZone = localPlayer->getCurrentZone();
 
     // Fire the zone's player loaded event
     targetZone->onZonePlayerLoad.invoke(inMsg.playerID);
-
+    rDebug::log("18");
     // If the player that loaded in was this local player, then fire the local version of the event
     if (inMsg.playerID == localPlayer->getPlayerID()) {
+        rDebug::log("19");
         onZoneLoad.invoke();
         rDebug::log("Loaded into zone!");
     }
