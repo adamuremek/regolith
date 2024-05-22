@@ -772,6 +772,8 @@ rStatusCode rWorld::loadZone(ZoneID zoneID) {
         rDebug::err("Zone could not be found to load by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
+
+    rDebug::log("GRRRRR TELL ME WHYYYY == END");
 }
 
 rStatusCode rWorld::unloadZone(const char *zoneName) {
@@ -801,5 +803,7 @@ rStatusCode rWorld::unloadZone(ZoneID zoneID) {
         rDebug::err("Zone could not be found to unload by requested zone ID!");
         return rStatusCode::ZONE_WITH_PROVIDED_ID_NOT_FOUND;
     }
+
+    rDebug::log("GAHHHHH STOP == END");
 }
 
