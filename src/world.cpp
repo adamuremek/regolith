@@ -131,7 +131,7 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
         rDebug::log("C3");
         msg.playerID = localPlayer->getPlayerID();
         rDebug::log("C4");
-        Bedrock::sendToHost(msg);
+        Bedrock::sendToHost(msg); // Something went wrong here
         rDebug::log("D");
         // Uninstantiate the zone (client side)
         rStatusCode code = zone->uninstantiateZone();
