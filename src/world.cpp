@@ -122,12 +122,15 @@ rStatusCode rWorld::unloadZone(rZone *zone) {
     }
     rDebug::log("B");
     if(Bedrock::isRole(Bedrock::Role::ACTOR_CLIENT)){
-        rDebug::log("C %p", zone);
+        rDebug::log("C1 %p", zone);
         // Tell the server that the current player/client is unloading the specified zone
         rControlMsg msg{};
         msg.msgType = rMessageType::PLAYER_UNLOADED_ZONE;
+        rDebug::log("C2");
         msg.zoneID = zone->getZoneID();
+        rDebug::log("C3");
         msg.playerID = localPlayer->getPlayerID();
+        rDebug::log("C4");
         Bedrock::sendToHost(msg);
         rDebug::log("D");
         // Uninstantiate the zone (client side)
@@ -624,7 +627,6 @@ void rWorld::csPlayerUnloadedZone(rControlMsg &inMsg, Bedrock::Message &outMsg) 
 }
 
 void rWorld::csHandleControlMsg(rControlMsg &inMsg, Bedrock::Message &outMsg) {
-    rDebug::log("HOLY SHIT PLEASE DUDE");
     switch (inMsg.msgType) {
         case rMessageType::ASSIGN_PLAYER_ID:
             csAssignPlayerID(inMsg, outMsg);
