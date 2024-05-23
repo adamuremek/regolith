@@ -1,3 +1,7 @@
+
+[submodule "extern/regolith"]
+	path = extern/regolith
+	url = https://github.com/adamuremek/bedrock.git
 [submodule "extern/bedrock"]
 	path = extern/bedrock
 	url = https://github.com/adamuremek/bedrock.git
